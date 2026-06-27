@@ -1,0 +1,30 @@
+{
+  "name": "process-goal",
+  "description": "Triggered when a new session row is inserted. The orchestrator classifies the goal, routes to the right specialist agent(s), and updates the session with a summary.",
+  "start": {
+    "type": "DATASTORE_EVENT",
+    "config": {
+      "table_name": "sessions",
+      "operations": ["INSERT"]
+    }
+  },
+  "nodes": [
+    {
+      "id": "orchestrate",
+      "type": "AGENT",
+      "label": "Orchestrate",
+      "config": {
+        "agent_name": "orchestrator",
+        "input_mapping": {
+          "session_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "goal": { "type": "expression", "value": "start.payload.goal" },
+          "mode": { "type": "expression", "value": "start.payload.mode", "optional": true }
+        }
+      }
+    },
+    { "id": "done", "type": "END", "label": "Done" }
+  ],
+  "edges": [
+    { "id": "e1", "source": "orchestrate", "target": "done" }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "study-agent",
+  "description": "Learning specialist. Reads uploaded notes, PDFs, and documents to create flashcards, quiz questions, study plans, and identify weak areas. Called by the orchestrator when the user's goal is to learn.",
+  "instruction": { "$file": "instruction.md" },
+  "toolsets": ["POD"],
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "session_id":       { "type": "string" },
+      "items_created":    { "type": "integer" },
+      "topics_covered":   { "type": "array", "items": { "type": "string" } },
+      "weak_areas":       { "type": "array", "items": { "type": "string" } },
+      "study_plan_summary": { "type": "string" }
+    },
+    "required": ["session_id", "items_created", "topics_covered"]
+  },
+  "permissions": {
+    "grants": [
+      { "resource_type": "folder", "resource_name": "/knowledge",
+        "permission_ids": ["folder.read"] },
+      { "resource_type": "datastore_table", "resource_name": "sessions",
+        "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+      { "resource_type": "datastore_table", "resource_name": "study_items",
+        "permission_ids": ["datastore.table.read", "datastore.record.read",
+                           "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "insights",
+        "permission_ids": ["datastore.table.read", "datastore.record.read",
+                           "datastore.record.write"] }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "research-agent",
+  "description": "Research and synthesis specialist. Reads uploaded documents, connects ideas across files, extracts key findings, and can supplement with web search. Writes structured insights to the insights table.",
+  "instruction": { "$file": "instruction.md" },
+  "toolsets": ["POD", "WEB_SEARCH"],
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "session_id":      { "type": "string" },
+      "insights_written": { "type": "integer" },
+      "key_themes":      { "type": "array", "items": { "type": "string" } },
+      "sources_used":    { "type": "array", "items": { "type": "string" } },
+      "synthesis":       { "type": "string" }
+    },
+    "required": ["session_id", "insights_written", "key_themes", "synthesis"]
+  },
+  "permissions": {
+    "grants": [
+      { "resource_type": "folder", "resource_name": "/knowledge",
+        "permission_ids": ["folder.read"] },
+      { "resource_type": "datastore_table", "resource_name": "sessions",
+        "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+      { "resource_type": "datastore_table", "resource_name": "insights",
+        "permission_ids": ["datastore.table.read", "datastore.record.read",
+                           "datastore.record.write"] }
+    ]
+  }
+}

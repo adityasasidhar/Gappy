@@ -1,0 +1,19 @@
+{
+  "name": "sessions",
+  "description": "Tracks each goal-processing session — what the user wants, how it was routed, and the outcome summary.",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "goal",        "type": "TEXT",    "required": true },
+    { "name": "mode",        "type": "ENUM",    "required": true, "default": "auto",
+      "options": ["auto", "learn", "research", "analyze"] },
+    { "name": "status",      "type": "ENUM",    "required": true, "default": "pending",
+      "options": ["pending", "processing", "done", "failed"] },
+    { "name": "summary",     "type": "TEXT" },
+    { "name": "sources_used","type": "TEXT",
+      "description": "JSON array of file paths or table names used by agents" },
+    { "name": "agent_mode",  "type": "TEXT",
+      "description": "The mode the orchestrator actually chose (may differ from user hint)" }
+  ],
+  "config": {}
+}
