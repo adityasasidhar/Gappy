@@ -1,0 +1,69 @@
+{
+  "name": "fraud-risk-assessor",
+  "description": "Identifies patterns of abuse, red flags, and risk indicators. Reasoning bias: conservative, skeptical. Domain: fraud detection, risk scoring, transaction pattern analysis. Defaults to caution and quantifies risk where possible.",
+  "instruction": { "$file": "instruction.md" },
+  "toolsets": ["POD"],
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "position": {
+        "type": "string",
+        "enum": ["FOR", "AGAINST", "ABSTAIN", "REFRAME"],
+        "description": "The agent's deliberated position on the task"
+      },
+      "argument": {
+        "type": "string",
+        "description": "Structured risk assessment with specific red flags, risk scores, and asymmetric risk analysis"
+      },
+      "confidence": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "description": "Confidence level in the stated position"
+      },
+      "key_evidence": {
+        "type": "string",
+        "description": "The single most significant risk indicator or pattern supporting the position"
+      }
+    },
+    "required": ["position", "argument", "confidence"]
+  },
+  "permissions": {
+    "grants": [
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "debate_sessions",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read"
+        ]
+      },
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "debate_rounds",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read"
+        ]
+      },
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "debate_messages",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read",
+          "datastore.record.write"
+        ]
+      },
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "pre_mortems",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read",
+          "datastore.record.write"
+        ]
+      }
+    ]
+  }
+}

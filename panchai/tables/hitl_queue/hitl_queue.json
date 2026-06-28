@@ -1,0 +1,23 @@
+{
+  "name": "hitl_queue",
+  "description": "Human-in-the-loop review queue. Tracks escalated verdicts awaiting human approval or rejection.",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "session_id", "type": "TEXT", "required": true,
+      "description": "FK to debate_sessions" },
+    { "name": "verdict_id", "type": "TEXT", "required": true,
+      "description": "FK to verdicts" },
+    { "name": "status", "type": "ENUM", "required": true, "default": "pending",
+      "options": ["pending", "reminded", "escalated", "resolved", "timed_out"] },
+    { "name": "primary_approver", "type": "TEXT",
+      "description": "User or role responsible for review" },
+    { "name": "decision", "type": "ENUM",
+      "options": ["approve", "reject", "send_back"] },
+    { "name": "decision_reason", "type": "TEXT",
+      "description": "Human reviewer's rationale" },
+    { "name": "escalation_tier", "type": "INT", "default": 1,
+      "description": "Current escalation level" }
+  ],
+  "config": {}
+}

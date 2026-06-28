@@ -1,0 +1,20 @@
+{
+  "name": "pre_mortems",
+  "description": "One row per agent's pre-mortem submission. Each agent identifies potential failure modes before the debate begins.",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "session_id", "type": "TEXT", "required": true,
+      "description": "FK to debate_sessions" },
+    { "name": "agent_id", "type": "TEXT", "required": true },
+    { "name": "failure_reason", "type": "TEXT", "required": true,
+      "description": "What could go wrong" },
+    { "name": "weak_assumption", "type": "TEXT", "required": true,
+      "description": "Which assumption is most fragile" },
+    { "name": "harmed_stakeholder", "type": "TEXT", "required": true,
+      "description": "Who gets hurt if this fails" },
+    { "name": "severity", "type": "ENUM", "required": true, "default": "MEDIUM",
+      "options": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] }
+  ],
+  "config": {}
+}

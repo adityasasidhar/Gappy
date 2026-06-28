@@ -1,0 +1,26 @@
+[
+  {
+    "agent_id": "supply_chain_analyst",
+    "client_id": "binocs",
+    "capabilities": ["supply_chain_optimization", "logistics_analysis", "demand_forecasting", "inventory_management"],
+    "reasoning_bias": "operational-efficiency",
+    "model": "claude-3-haiku",
+    "description": "Optimizes supply chain decisions by analyzing logistics, demand signals, and inventory levels."
+  },
+  {
+    "agent_id": "financial_risk",
+    "client_id": "binocs",
+    "capabilities": ["risk_scoring", "cash_flow_analysis", "financial_modeling", "vendor_risk"],
+    "reasoning_bias": "risk-averse",
+    "model": "claude-3-haiku",
+    "description": "Evaluates financial exposure, cash flow impact, and vendor risk. Bias toward capital preservation."
+  },
+  {
+    "agent_id": "procurement_specialist",
+    "client_id": "binocs",
+    "capabilities": ["vendor_management", "cost_optimization", "procurement_analysis", "order_management"],
+    "reasoning_bias": "cost-optimization",
+    "model": "claude-3-haiku",
+    "description": "Manages vendor relationships and procurement decisions. Optimizes for cost efficiency and delivery reliability."
+  }
+]

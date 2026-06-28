@@ -1,0 +1,45 @@
+{
+  "name": "registry_lookup",
+  "description": "Looks up the agent_catalog for a given client, matches agent capabilities against the stripped task keywords, and returns a council of agents sized by stakes level (3 for STANDARD, up to 5 for HIGH).",
+  "handler": "registry_lookup.py:registry_lookup",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "stripped_task": {
+        "type": "string",
+        "description": "Facts-only version of the task to match against agent capabilities"
+      },
+      "client_id": {
+        "type": "string",
+        "description": "Enterprise client ID to filter agents"
+      },
+      "stakes_level": {
+        "type": "string",
+        "enum": ["STANDARD", "HIGH"],
+        "description": "Determines council size: STANDARD=3, HIGH=up to 5"
+      }
+    },
+    "required": ["stripped_task", "client_id", "stakes_level"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "selected_agents": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "agent_id": { "type": "string" },
+            "agent_name": { "type": "string" },
+            "reasoning_bias": { "type": "string" }
+          }
+        },
+        "description": "Ordered list of agents selected for the deliberation council"
+      },
+      "council_size": {
+        "type": "integer",
+        "description": "Number of agents on the council"
+      }
+    }
+  }
+}

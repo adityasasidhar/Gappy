@@ -1,0 +1,25 @@
+{
+  "name": "agent_catalog",
+  "description": "Capability registry for each client's agents. Used by registry_lookup to assemble deliberation councils.",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "client_id", "type": "TEXT", "required": true,
+      "description": "Which enterprise client owns this agent" },
+    { "name": "agent_id", "type": "TEXT", "required": true,
+      "description": "Unique identifier for the agent" },
+    { "name": "agent_name", "type": "TEXT", "required": true,
+      "description": "Human-readable agent name" },
+    { "name": "capabilities", "type": "TEXT", "required": true,
+      "description": "JSON array of capability strings" },
+    { "name": "input_schema", "type": "TEXT",
+      "description": "JSON schema for agent input" },
+    { "name": "output_schema", "type": "TEXT",
+      "description": "JSON schema for agent output" },
+    { "name": "reasoning_bias", "type": "TEXT", "required": true,
+      "description": "The agent's reasoning bias label (e.g. optimist, devil_advocate, pragmatist)" },
+    { "name": "model", "type": "TEXT",
+      "description": "Underlying LLM model identifier" }
+  ],
+  "config": {}
+}

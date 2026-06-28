@@ -1,0 +1,22 @@
+{
+  "name": "debate_messages",
+  "description": "APPEND-ONLY. One row per agent argument per round. Powers the live feed via watchChanges().",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "session_id", "type": "TEXT", "required": true,
+      "description": "FK to debate_sessions" },
+    { "name": "round_id", "type": "TEXT", "required": true,
+      "description": "FK to debate_rounds" },
+    { "name": "agent_id", "type": "TEXT", "required": true },
+    { "name": "agent_name", "type": "TEXT", "required": true },
+    { "name": "position", "type": "ENUM", "required": true,
+      "options": ["FOR", "AGAINST", "ABSTAIN", "REFRAME"] },
+    { "name": "argument", "type": "TEXT", "required": true,
+      "description": "The agent's full argument text" },
+    { "name": "round_number", "type": "INT", "required": true },
+    { "name": "reasoning_bias", "type": "TEXT",
+      "description": "The agent's bias label for display" }
+  ],
+  "config": {}
+}

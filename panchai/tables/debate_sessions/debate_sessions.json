@@ -1,0 +1,25 @@
+{
+  "name": "debate_sessions",
+  "description": "One row per task submitted for deliberation. Tracks the full lifecycle of a PANCHAI debate from submission through verdict.",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "client_id", "type": "TEXT", "required": true,
+      "description": "Which enterprise client submitted this task" },
+    { "name": "task_input", "type": "TEXT", "required": true,
+      "description": "Raw user input for deliberation" },
+    { "name": "user_goal", "type": "TEXT",
+      "description": "Extracted user's desired outcome (set by goal_strip)" },
+    { "name": "stripped_task", "type": "TEXT",
+      "description": "Facts-only version of the task (set by goal_strip)" },
+    { "name": "stakes_level", "type": "ENUM", "required": true, "default": "STANDARD",
+      "options": ["STANDARD", "HIGH"] },
+    { "name": "status", "type": "ENUM", "required": true, "default": "pending",
+      "options": ["pending", "stripping", "pre_mortem", "debating", "voting", "verdict", "hitl", "done", "failed"] },
+    { "name": "council_size", "type": "INT", "default": 3,
+      "description": "Number of agents on the deliberation council" },
+    { "name": "task_context", "type": "TEXT",
+      "description": "Additional context or data for the task" }
+  ],
+  "config": {}
+}

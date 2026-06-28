@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PANCHAI — Deliberation Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+  <script src="https://api.lemma.work/public/sdk/lemma-client.js"></script>
+  <style>
+    /* ── Design Tokens ── */
+    :root {
+      --bg: #09090b;
+      --bg2: #18181b;
+      --surface: #27272a;
+      --surface-hover: #3f3f46;
+      --border: rgba(255, 255, 255, 0.1);
+      --border2: rgba(255, 255, 255, 0.15);
+      
+      --accent: #6366f1; /* Indigo */
+      --accent-hover: #4f46e5;
+      --accent-muted: rgba(99, 102, 241, 0.15);
+      
+      --for-color: #10b981; /* Emerald */
+      --for-bg: rgba(16, 185, 129, 0.1);
+      --against-color: #ef4444; /* Red */
+      --against-bg: rgba(239, 68, 68, 0.1);
+      --reframe-color: #3b82f6; /* Blue */
+      --reframe-bg: rgba(59, 130, 246, 0.1);
+      --abstain-color: #94a3b8; /* Slate */
+      --abstain-bg: rgba(148, 163, 184, 0.1);
+      --warning-color: #f59e0b; /* Amber for Pre-mortem */
+      --warning-bg: rgba(245, 158, 11, 0.1);
+
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Outfit', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Layout ── */
+    header {
+      height: 64px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 1px;
+    }
+    
+    .brand svg { color: var(--accent); }
+
+    .header-controls {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    select.session-select {
+      background: var(--bg2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      outline: none;
+      min-width: 200px;
+      transition: border-color 0.2s;
+    }
+    select.session-select:focus { border-color: var(--accent); }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 320px;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: radial-gradient(circle at top right, rgba(99,102,241,0.05), transparent 50%);
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      background: var(--bg);
+    }
+    
+    .tab {
+      padding: 16px 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 500;
+      font-family: var(--font-display);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── Views ── */
+    .view {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+    }
+    .view.active { display: block; animation: fadeIn 0.4s ease-out; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Context Sidebar ── */
+    .sidebar-section {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .sidebar-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .task-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .meta-item { display: flex; flex-direction: column; gap: 4px; }
+    .meta-label { font-size: 12px; color: var(--text-muted); }
+    .meta-value { font-size: 14px; font-weight: 500; }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge.high-stakes { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+    .badge.standard-stakes { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      margin-top: 16px;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .status-dot.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 2s infinite; }
+    .status-dot.done { background: var(--for-color); }
+    .status-dot.hitl { background: var(--warning-color); }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+
+    /* ── Live Debate Feed ── */
+    .feed-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding-bottom: 100px; /* Space for scrolling */
+    }
+
+    .round-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 16px 0;
+      color: var(--text-muted);
+      font-family: var(--font-display);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .round-divider::before, .round-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .message-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .message-card::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+    }
+    
+    .pos-FOR::before { background: var(--for-color); }
+    .pos-AGAINST::before { background: var(--against-color); }
+    .pos-REFRAME::before { background: var(--reframe-color); }
+    .pos-ABSTAIN::before { background: var(--abstain-color); }
+    .pos-PREMORTEM::before { background: var(--warning-color); }
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .agent-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .agent-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+    }
+
+    .agent-details { display: flex; flex-direction: column; }
+    .agent-name { font-weight: 600; font-family: var(--font-display); }
+    .agent-bias { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .position-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .pos-FOR .position-badge { background: var(--for-bg); color: var(--for-color); }
+    .pos-AGAINST .position-badge { background: var(--against-bg); color: var(--against-color); }
+    .pos-REFRAME .position-badge { background: var(--reframe-bg); color: var(--reframe-color); }
+    .pos-PREMORTEM .position-badge { background: var(--warning-bg); color: var(--warning-color); }
+
+    .message-body {
+      color: #e2e8f0;
+      font-size: 15px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    /* ── Verdict Dashboard ── */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .card-title svg { color: var(--text-muted); }
+
+    /* Outcome specific */
+    .outcome-card {
+      grid-column: span 12;
+      background: linear-gradient(135deg, rgba(24,24,27,1) 0%, rgba(39,39,42,1) 100%);
+      border: 1px solid var(--border2);
+      text-align: center;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .verdict-large {
+      font-family: var(--font-display);
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    .v-APPROVED { color: var(--for-color); text-shadow: 0 0 20px rgba(16,185,129,0.2); }
+    .v-REJECTED { color: var(--against-color); text-shadow: 0 0 20px rgba(239,68,68,0.2); }
+    .v-ESCALATED { color: var(--warning-color); text-shadow: 0 0 20px rgba(245,158,11,0.2); }
+    .v-REFRAMED { color: var(--reframe-color); text-shadow: 0 0 20px rgba(59,130,246,0.2); }
+
+    .confidence-gauge {
+      grid-column: span 4;
+      align-items: center;
+    }
+    
+    .gauge-circle {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      font-family: var(--font-display);
+      margin: 10px 0;
+    }
+    
+    .gauge-svg {
+      position: absolute;
+      top: 0; left: 0;
+      transform: rotate(-90deg);
+    }
+    .gauge-bg { fill: none; stroke: var(--surface); stroke-width: 8; }
+    .gauge-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dasharray 1s ease-out; }
+
+    .vote-breakdown { grid-column: span 8; }
+    
+    .vote-bar-container {
+      display: flex;
+      height: 24px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      background: var(--surface);
+    }
+    
+    .vote-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      transition: width 0.5s;
+    }
+    .seg-for { background: var(--for-color); }
+    .seg-against { background: var(--against-color); }
+    
+    .agent-vote-list { display: flex; flex-direction: column; gap: 12px; }
+    .agent-vote-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+    }
+
+    .conflict-report { grid-column: span 12; }
+    .conflict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .conflict-box {
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .conflict-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+    .divergence-alert {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 500;
+    }
+    .div-high { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .div-low { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+
+    /* ── HITL Form ── */
+    #hitl-form-container {
+      display: none; /* Shown when status == hitl */
+      grid-column: span 12;
+      background: rgba(245, 158, 11, 0.05);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: var(--radius);
+      padding: 32px;
+    }
+    
+    .hitl-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--warning-color);
+      margin-bottom: 24px;
+    }
+    
+    .hitl-options {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .hitl-option {
+      flex: 1;
+      position: relative;
+    }
+    
+    .hitl-option input[type="radio"] { display: none; }
+    
+    .hitl-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+    
+    .hitl-option input[type="radio"]:checked + label {
+      border-color: var(--accent);
+      background: rgba(99, 102, 241, 0.1);
+      color: white;
+    }
+    
+    textarea.hitl-reason {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 16px;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      min-height: 100px;
+      resize: vertical;
+      margin-bottom: 20px;
+      outline: none;
+    }
+    textarea.hitl-reason:focus { border-color: var(--accent); }
+    
+    button.btn-primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button.btn-primary:hover { background: var(--accent-hover); }
+    button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Empty States */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .empty-state svg { margin-bottom: 16px; opacity: 0.5; }
+    .empty-state h3 { font-family: var(--font-display); color: var(--text); margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <i data-lucide="scale"></i>
+      PANCHAI
+    </div>
+    <div class="header-controls">
+      <span style="font-size: 13px; color: var(--text-muted);">Active Session:</span>
+      <select id="session-select" class="session-select">
+        <option value="">Loading sessions...</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <!-- Sidebar: Context -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Task Context</h3>
+        <div id="sidebar-content" class="task-meta">
+          <div class="meta-item">
+            <span class="meta-label">Client</span>
+            <span class="meta-value" id="meta-client">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Submitted Goal</span>
+            <span class="meta-value" id="meta-goal" style="color: #e2e8f0; font-style: italic;">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Stripped Fact Pattern</span>
+            <span class="meta-value" id="meta-stripped" style="font-size: 13px; line-height: 1.5; color: var(--text-muted);">—</span>
+          </div>
+          <div>
+            <span id="meta-stakes" class="badge standard-stakes">Standard Stakes</span>
+          </div>
+        </div>
+        
+        <div id="meta-status-box" class="status-indicator">
+          <div id="meta-status-dot" class="status-dot"></div>
+          <span id="meta-status-text">Waiting for session...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" data-target="view-feed">
+          <i data-lucide="activity" class="icon"></i> Live Debate Feed
+        </div>
+        <div class="tab" data-target="view-verdict">
+          <i data-lucide="file-check" class="icon"></i> Verdict Dashboard
+        </div>
+      </div>
+
+      <!-- View: Live Feed -->
+      <div id="view-feed" class="view active">
+        <div id="feed-container" class="feed-container">
+          <div class="empty-state">
+            <i data-lucide="message-square" class="icon-xl"></i>
+            <h3>No Active Debate</h3>
+            <p>Select a session to view the live deliberation feed.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- View: Verdict Dashboard -->
+      <div id="view-verdict" class="view">
+        <div id="verdict-container" class="dashboard-grid" style="display: none;">
+          
+          <!-- Outcome -->
+          <div class="card outcome-card">
+            <div id="vd-verdict-text" class="verdict-large v-APPROVED">APPROVED</div>
+            <p id="vd-reason" style="color: var(--text-muted); max-width: 600px;">—</p>
+          </div>
+          
+          <!-- Confidence -->
+          <div class="card confidence-gauge">
+            <div class="card-title">Confidence Score</div>
+            <div class="gauge-circle">
+              <svg class="gauge-svg" width="120" height="120">
+                <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
+                <circle id="vd-gauge-fill" class="gauge-fill" cx="60" cy="60" r="50" stroke="#10b981" stroke-dasharray="0 314"></circle>
+              </svg>
+              <span id="vd-confidence-text">0%</span>
+            </div>
+            <p id="vd-confidence-label" style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 8px;">—</p>
+          </div>
+          
+          <!-- Vote Breakdown -->
+          <div class="card vote-breakdown">
+            <div class="card-title">Council Vote</div>
+            <div class="vote-bar-container" id="vd-vote-bar">
+              <div class="vote-segment seg-for" style="width: 50%;">FOR</div>
+              <div class="vote-segment seg-against" style="width: 50%;">AGAINST</div>
+            </div>
+            <div id="vd-agent-votes" class="agent-vote-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+          
+          <!-- Conflict Report -->
+          <div class="card conflict-report">
+            <div class="card-title"><i data-lucide="git-compare"></i> Goal Divergence Analysis</div>
+            <div class="conflict-grid">
+              <div class="conflict-box">
+                <div class="conflict-label">User's Desired Goal</div>
+                <div id="vd-user-goal" style="font-size: 15px;">—</div>
+              </div>
+              <div class="conflict-box">
+                <div class="conflict-label">Council's Finding</div>
+                <div id="vd-council-finding" style="font-size: 15px;">—</div>
+              </div>
+            </div>
+            <div id="vd-divergence-alert" class="divergence-alert div-low">
+              <i data-lucide="check-circle" id="vd-div-icon"></i>
+              <span id="vd-div-text">Low Divergence: Council validates user premise</span>
+            </div>
+          </div>
+          
+          <!-- HITL Form (Conditional) -->
+          <div id="hitl-form-container">
+            <div class="hitl-header">
+              <i data-lucide="alert-triangle" class="icon-lg"></i>
+              <h2 style="font-family: var(--font-display);">Human-in-the-Loop Required</h2>
+            </div>
+            <p style="margin-bottom: 24px; color: #e2e8f0;" id="hitl-reason-text">—</p>
+            
+            <div class="hitl-options">
+              <div class="hitl-option">
+                <input type="radio" name="hitl_decision" id="dec-approve" value="approve">
+                <label for="dec-approve"><i data-lucide="check" style="color: var(--for-color)"></i> Approve (Override)</label>
+              </div>
+              <div class="hitl-option">
+                <input type="radio" name="hitl_decision" id="dec-reject" value="reject">
+                <label for="dec-reject"><i data-lucide="x" style="color: var(--against-color)"></i> Reject (Uphold Council)</label>
+              </div>
+              <div class="hitl-option">
+                <input type="radio" name="hitl_decision" id="dec-sendback" value="send_back">
+                <label for="dec-sendback"><i data-lucide="refresh-cw" style="color: var(--reframe-color)"></i> Send Back (Re-Debate)</label>
+              </div>
+            </div>
+            
+            <textarea id="hitl-reason-input" class="hitl-reason" placeholder="Provide reasoning for your decision (Required for Reject / Send Back)..."></textarea>
+            
+            <button id="hitl-submit-btn" class="btn-primary" disabled>
+              Submit Decision <i data-lucide="arrow-right" class="icon-sm"></i>
+            </button>
+          </div>
+
+        </div>
+        
+        <div id="verdict-empty" class="empty-state">
+          <i data-lucide="clock" class="icon-xl"></i>
+          <h3>Debate in Progress</h3>
+          <p>The verdict dashboard will populate once deliberation completes.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize Icons
+    lucide.createIcons();
+
+    // Setup Lemma Client
+    const client = new window.LemmaClient.LemmaClient();
+    
+    // State
+    let activeSessionId = null;
+    let feedSubscription = null;
+    let sessionSubscription = null;
+    let currentWorkflowRunId = null;
+    let formNodeId = null;
+
+    // UI Elements
+    const sessionSelect = document.getElementById('session-select');
+    const tabs = document.querySelectorAll('.tab');
+    const views = document.querySelectorAll('.view');
+    const feedContainer = document.getElementById('feed-container');
+    const hitlSubmitBtn = document.getElementById('hitl-submit-btn');
+
+    // Tab Switching
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        views.forEach(v => v.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.target).classList.add('active');
+      });
+    });
+
+    // Initialize App
+    async function initApp() {
+      await client.initialize();
+      await loadSessions();
+      
+      sessionSelect.addEventListener('change', (e) => {
+        if (e.target.value) setActiveSession(e.target.value);
+      });
+      
+      // HITL Form logic
+      const radios = document.querySelectorAll('input[name="hitl_decision"]');
+      const reasonInput = document.getElementById('hitl-reason-input');
+      
+      const checkFormState = () => {
+        const decision = document.querySelector('input[name="hitl_decision"]:checked')?.value;
+        const reason = reasonInput.value.trim();
+        if (decision === 'approve') {
+          hitlSubmitBtn.disabled = false;
+        } else if ((decision === 'reject' || decision === 'send_back') && reason.length > 5) {
+          hitlSubmitBtn.disabled = false;
+        } else {
+          hitlSubmitBtn.disabled = true;
+        }
+      };
+      
+      radios.forEach(r => r.addEventListener('change', checkFormState));
+      reasonInput.addEventListener('input', checkFormState);
+      
+      hitlSubmitBtn.addEventListener('click', submitHitlDecision);
+    }
+
+    async function loadSessions() {
+      try {
+        const response = await client.records.list("debate_sessions", { 
+          sort: [{ field: "created_at", direction: "desc" }] 
+        });
+        
+        sessionSelect.innerHTML = '<option value="">-- Select a Session --</option>';
+        
+        if (response.items && response.items.length > 0) {
+          response.items.forEach(session => {
+            const opt = document.createElement('option');
+            opt.value = session.id;
+            const shortGoal = session.task_input ? session.task_input.substring(0, 40) + '...' : 'Unknown Task';
+            opt.textContent = `${session.client_id.toUpperCase()} - ${shortGoal}`;
+            sessionSelect.appendChild(opt);
+          });
+          
+          // Auto-select first
+          sessionSelect.value = response.items[0].id;
+          setActiveSession(response.items[0].id);
+        }
+      } catch (err) {
+        console.error("Error loading sessions:", err);
+        sessionSelect.innerHTML = '<option value="">Error loading sessions</option>';
+      }
+    }
+
+    async function setActiveSession(sessionId) {
+      activeSessionId = sessionId;
+      feedContainer.innerHTML = ''; // Clear feed
+      
+      // Load session details
+      try {
+        const session = await client.records.get("debate_sessions", sessionId);
+        updateSidebar(session);
+        
+        // Find workflow run ID (for HITL submission)
+        // Note: In a real app we'd track this via a table column or lookup, 
+        // for hackathon we assume we can query workflow runs or mock it.
+        // For now, form submission will just update hitl_queue table.
+        
+        // Setup Live Feed
+        setupFeedSubscription(sessionId);
+        
+        // Setup Session Polling/Subscription for Verdict
+        setupSessionPolling(sessionId);
+        
+      } catch (err) {
+        console.error("Error setting active session:", err);
+      }
+    }
+
+    function updateSidebar(session) {
+      document.getElementById('meta-client').textContent = session.client_id.toUpperCase();
+      document.getElementById('meta-goal').textContent = session.user_goal || session.task_input;
+      document.getElementById('meta-stripped').textContent = session.stripped_task || "Pending goal stripping...";
+      
+      const stakesBadge = document.getElementById('meta-stakes');
+      if (session.stakes_level === 'HIGH') {
+        stakesBadge.className = 'badge high-stakes';
+        stakesBadge.textContent = 'High Stakes';
+      } else {
+        stakesBadge.className = 'badge standard-stakes';
+        stakesBadge.textContent = 'Standard Stakes';
+      }
+      
+      updateStatusIndicator(session.status);
+    }
+
+    function updateStatusIndicator(status) {
+      const box = document.getElementById('meta-status-box');
+      const dot = document.getElementById('meta-status-dot');
+      const text = document.getElementById('meta-status-text');
+      
+      dot.className = 'status-dot'; // reset
+      
+      const statusMap = {
+        'pending': { label: 'Pending', active: true },
+        'stripping': { label: 'Stripping Goal', active: true },
+        'pre_mortem': { label: 'Pre-Mortem Phase', active: true },
+        'debating': { label: 'Active Debate', active: true },
+        'voting': { label: 'Synthesizing Verdict', active: true },
+        'verdict': { label: 'Verdict Reached', active: false, done: true },
+        'hitl': { label: 'Awaiting Human Approval', active: false, hitl: true },
+        'done': { label: 'Completed', active: false, done: true }
+      };
+      
+      const info = statusMap[status] || { label: status, active: false };
+      text.textContent = info.label;
+      if (info.active) dot.classList.add('active');
+      if (info.done) dot.classList.add('done');
+      if (info.hitl) dot.classList.add('hitl');
+    }
+
+    function setupFeedSubscription(sessionId) {
+      if (feedSubscription) feedSubscription.close();
+      
+      // For Lemma SDK, we'll poll if watchChanges isn't fully robust in JS yet, 
+      // but let's try the WebSocket approach as designed.
+      // (Mocking the polling approach as a reliable fallback for UI rendering)
+      let lastRenderedTime = 0;
+      let currentRound = -1;
+      
+      const pollMessages = async () => {
+        if (activeSessionId !== sessionId) return;
+        try {
+          const resp = await client.records.list("debate_messages", {
+            filter: [{ field: "session_id", op: "eq", value: sessionId }],
+            sort: [{ field: "created_at", direction: "asc" }],
+            limit: 100
+          });
+          
+          if (resp.items) {
+            resp.items.forEach(msg => {
+              const msgTime = new Date(msg.created_at).getTime();
+              if (msgTime > lastRenderedTime) {
+                renderMessageCard(msg, currentRound);
+                currentRound = msg.round_number;
+                lastRenderedTime = msgTime;
+                
+                // Auto scroll
+                const feedView = document.getElementById('view-feed');
+                feedView.scrollTop = feedView.scrollHeight;
+              }
+            });
+          }
+        } catch (err) {
+          console.error("Poll error:", err);
+        }
+        feedSubscription = setTimeout(pollMessages, 2000);
+      };
+      
+      pollMessages();
+    }
+
+    function renderMessageCard(msg, currentRound) {
+      if (currentRound !== msg.round_number) {
+        const div = document.createElement('div');
+        div.className = 'round-divider';
+        div.textContent = msg.round_number === 0 ? 'Phase: Pre-Mortem' : `Debate Round ${msg.round_number}`;
+        feedContainer.appendChild(div);
+      }
+      
+      const posClass = msg.round_number === 0 ? 'pos-PREMORTEM' : `pos-${msg.position}`;
+      const posLabel = msg.round_number === 0 ? 'PRE-MORTEM' : msg.position;
+      
+      const card = document.createElement('div');
+      card.className = `message-card ${posClass}`;
+      card.innerHTML = `
+        <div class="message-header">
+          <div class="agent-info">
+            <div class="agent-avatar"><i data-lucide="bot" class="icon"></i></div>
+            <div class="agent-details">
+              <span class="agent-name">${formatAgentName(msg.agent_name || msg.agent_id)}</span>
+              <span class="agent-bias">${msg.reasoning_bias || 'Analyst'}</span>
+            </div>
+          </div>
+          <div class="position-badge">${posLabel}</div>
+        </div>
+        <div class="message-body">${escapeHtml(msg.argument)}</div>
+      `;
+      
+      feedContainer.appendChild(card);
+      lucide.createIcons({ root: card });
+    }
+
+    function setupSessionPolling(sessionId) {
+      if (sessionSubscription) clearTimeout(sessionSubscription);
+      
+      const pollSession = async () => {
+        if (activeSessionId !== sessionId) return;
+        try {
+          const session = await client.records.get("debate_sessions", sessionId);
+          updateStatusIndicator(session.status);
+          
+          if (session.status === 'verdict' || session.status === 'done' || session.status === 'hitl') {
+            await loadVerdict(sessionId);
+            
+            if (session.status === 'hitl') {
+              document.getElementById('hitl-form-container').style.display = 'block';
+              tabs[1].click(); // Auto-switch to verdict tab on HITL
+            }
+          }
+          
+          if (session.status !== 'done' && session.status !== 'hitl') {
+            sessionSubscription = setTimeout(pollSession, 3000);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      pollSession();
+    }
+
+    async function loadVerdict(sessionId) {
+      document.getElementById('verdict-empty').style.display = 'none';
+      document.getElementById('verdict-container').style.display = 'grid';
+      
+      try {
+        const resp = await client.records.list("verdicts", {
+          filter: [{ field: "session_id", op: "eq", value: sessionId }]
+        });
+        
+        if (resp.items && resp.items.length > 0) {
+          const v = resp.items[0];
+          
+          // Verdict Header
+          const vText = document.getElementById('vd-verdict-text');
+          vText.textContent = v.verdict;
+          vText.className = `verdict-large v-${v.verdict}`;
+          document.getElementById('vd-reason').textContent = v.recommended_action || "Verdict reached by council deliberation.";
+          
+          // Confidence Gauge
+          const cScore = v.confidence_score || 0;
+          const pct = Math.round(cScore * 100);
+          document.getElementById('vd-confidence-text').textContent = `${pct}%`;
+          
+          const gaugeFill = document.getElementById('vd-gauge-fill');
+          const dashOffset = 314 - (314 * cScore);
+          gaugeFill.style.strokeDasharray = `${314 - dashOffset} 314`;
+          
+          let cColor = '#ef4444';
+          let cLabel = 'Low Confidence';
+          if (cScore >= 0.8) { cColor = '#10b981'; cLabel = 'High Confidence'; }
+          else if (cScore >= 0.6) { cColor = '#f59e0b'; cLabel = 'Moderate Confidence'; }
+          
+          gaugeFill.style.stroke = cColor;
+          document.getElementById('vd-confidence-label').textContent = cLabel;
+          
+          // Conflict Report
+          if (v.conflict_report) {
+            let cr = typeof v.conflict_report === 'string' ? JSON.parse(v.conflict_report) : v.conflict_report;
+            document.getElementById('vd-user-goal').textContent = cr.user_goal || 'N/A';
+            document.getElementById('vd-council-finding').textContent = cr.council_finding || 'N/A';
+            
+            const alert = document.getElementById('vd-divergence-alert');
+            const alertText = document.getElementById('vd-div-text');
+            if (cr.divergence_severity === 'HIGH') {
+              alert.className = 'divergence-alert div-high';
+              alertText.textContent = 'High Divergence: Council contradicts user goal';
+              document.getElementById('vd-div-icon').setAttribute('data-lucide', 'alert-circle');
+            } else {
+              alert.className = 'divergence-alert div-low';
+              alertText.textContent = 'Low Divergence: Council aligns with user goal';
+              document.getElementById('vd-div-icon').setAttribute('data-lucide', 'check-circle');
+            }
+          }
+          
+          // HITL Context
+          if (v.hitl_required) {
+            document.getElementById('hitl-reason-text').textContent = v.hitl_reason || "Escalation thresholds met.";
+          }
+          
+          lucide.createIcons();
+        }
+      } catch (err) {
+        console.error("Error loading verdict:", err);
+      }
+    }
+
+    async function submitHitlDecision() {
+      const btn = document.getElementById('hitl-submit-btn');
+      const decision = document.querySelector('input[name="hitl_decision"]:checked').value;
+      const reason = document.getElementById('hitl-reason-input').value;
+      
+      btn.disabled = true;
+      btn.innerHTML = 'Submitting... <i data-lucide="loader" class="icon-sm"></i>';
+      lucide.createIcons({root: btn});
+      
+      try {
+        // Write to hitl_queue table
+        await client.records.create("hitl_queue", {
+          session_id: activeSessionId,
+          verdict_id: "verdict_placeholder", // ideally fetched from verdict row
+          status: "resolved",
+          decision: decision,
+          decision_reason: reason
+        });
+        
+        // Update session status
+        await client.records.update("debate_sessions", activeSessionId, {
+          status: decision === 'send_back' ? 'debating' : 'done'
+        });
+        
+        document.getElementById('hitl-form-container').innerHTML = `
+          <div style="text-align: center; padding: 20px;">
+            <i data-lucide="check-circle" style="color: var(--for-color); width: 48px; height: 48px; margin-bottom: 16px;"></i>
+            <h3>Decision Recorded</h3>
+            <p style="color: var(--text-muted); margin-top: 8px;">The pipeline will now process your decision.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        
+      } catch (err) {
+        console.error("Error submitting HITL:", err);
+        btn.disabled = false;
+        btn.innerHTML = 'Error. Try Again';
+      }
+    }
+
+    // Utils
+    function formatAgentName(id) {
+      if (!id) return "Agent";
+      return id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    
+    function escapeHtml(unsafe) {
+      return (unsafe||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Start
+    initApp();
+
+  </script>
+</body>
+</html>

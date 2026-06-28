@@ -1,0 +1,146 @@
+{
+  "name": "panchai-brain",
+  "description": "The Core Brain of PANCHAI — orchestrates the full deliberation pipeline: goal stripping, pre-mortem forcing, agent selection, blind debate with active moderation, verdict synthesis, and HITL escalation.",
+  "instruction": { "$file": "instruction.md" },
+  "toolsets": ["POD", "WEB_SEARCH"],
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "session_id": {
+        "type": "string",
+        "description": "Unique identifier for this debate session"
+      },
+      "verdict": {
+        "type": "string",
+        "enum": ["APPROVED", "REJECTED", "ESCALATED", "REFRAMED"],
+        "description": "The council's final verdict"
+      },
+      "confidence_score": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "description": "Confidence in the verdict based on vote unanimity, argument consistency, and pre-mortem severity"
+      },
+      "hitl_required": {
+        "type": "boolean",
+        "description": "Whether human-in-the-loop escalation was triggered"
+      },
+      "summary": {
+        "type": "string",
+        "description": "Human-readable summary of the deliberation outcome including vote breakdown and key arguments"
+      }
+    },
+    "required": ["session_id", "verdict", "confidence_score", "hitl_required", "summary"]
+  },
+  "permissions": {
+    "grants": [
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "debate_sessions",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read",
+          "datastore.record.write"
+        ]
+      },
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "debate_rounds",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read",
+          "datastore.record.write"
+        ]
+      },
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "pre_mortems",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read",
+          "datastore.record.write"
+        ]
+      },
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "debate_messages",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read",
+          "datastore.record.write"
+        ]
+      },
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "verdicts",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read",
+          "datastore.record.write"
+        ]
+      },
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "hitl_queue",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read",
+          "datastore.record.write"
+        ]
+      },
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "agent_catalog",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read"
+        ]
+      },
+      {
+        "resource_type": "function",
+        "resource_name": "goal_strip",
+        "permission_ids": ["function.execute"]
+      },
+      {
+        "resource_type": "function",
+        "resource_name": "registry_lookup",
+        "permission_ids": ["function.execute"]
+      },
+      {
+        "resource_type": "agent",
+        "resource_name": "policy-analyst",
+        "permission_ids": ["agent.execute"]
+      },
+      {
+        "resource_type": "agent",
+        "resource_name": "customer-advocate",
+        "permission_ids": ["agent.execute"]
+      },
+      {
+        "resource_type": "agent",
+        "resource_name": "fraud-risk-assessor",
+        "permission_ids": ["agent.execute"]
+      },
+      {
+        "resource_type": "agent",
+        "resource_name": "supply-chain-analyst",
+        "permission_ids": ["agent.execute"]
+      },
+      {
+        "resource_type": "agent",
+        "resource_name": "financial-risk",
+        "permission_ids": ["agent.execute"]
+      },
+      {
+        "resource_type": "agent",
+        "resource_name": "procurement-specialist",
+        "permission_ids": ["agent.execute"]
+      },
+      {
+        "resource_type": "folder",
+        "resource_name": "/memory",
+        "permission_ids": ["folder.read", "folder.write"]
+      }
+    ]
+  }
+}

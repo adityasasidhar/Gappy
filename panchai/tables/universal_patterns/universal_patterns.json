@@ -1,0 +1,21 @@
+{
+  "name": "universal_patterns",
+  "description": "Anonymized cross-client patterns for future use. Aggregates debate outcomes to surface recurring decision trends.",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "task_type", "type": "TEXT",
+      "description": "Category of task (e.g. hiring, pricing, compliance)" },
+    { "name": "domain", "type": "TEXT",
+      "description": "Industry or domain vertical" },
+    { "name": "vote_split", "type": "TEXT",
+      "description": "JSON representation of how votes typically split" },
+    { "name": "hitl_outcome", "type": "TEXT",
+      "description": "How humans typically resolve this pattern" },
+    { "name": "pattern_description", "type": "TEXT",
+      "description": "Human-readable description of the pattern" },
+    { "name": "occurrence_count", "type": "INT", "default": 0,
+      "description": "Number of times this pattern has been observed" }
+  ],
+  "config": {}
+}

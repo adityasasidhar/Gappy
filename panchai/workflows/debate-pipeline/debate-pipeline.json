@@ -1,0 +1,93 @@
+{
+  "name": "debate-pipeline",
+  "description": "PANCHAI deliberation pipeline. Triggered when a new debate_sessions row is inserted. The panchai-brain orchestrates goal stripping, pre-mortem, agent selection, blind debate, and verdict synthesis. Routes to HITL approval when triggered.",
+  "start": {
+    "type": "DATASTORE_EVENT",
+    "config": {
+      "table_name": "debate_sessions",
+      "operations": ["INSERT"]
+    }
+  },
+  "nodes": [
+    {
+      "id": "deliberate",
+      "type": "AGENT",
+      "label": "Deliberate",
+      "config": {
+        "agent_name": "panchai-brain",
+        "input_mapping": {
+          "session_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "task_input": { "type": "expression", "value": "start.payload.task_input" },
+          "client_id": { "type": "expression", "value": "start.payload.client_id" },
+          "task_context": { "type": "expression", "value": "start.payload.task_context", "optional": true }
+        }
+      }
+    },
+    {
+      "id": "hitl_approval",
+      "type": "FORM",
+      "label": "Human-in-the-Loop Approval",
+      "config": {
+        "form_fields": [
+          {
+            "name": "decision",
+            "type": "ENUM",
+            "label": "Decision",
+            "description": "Approve to override council and proceed, Reject to uphold council verdict, or Send Back to trigger one more debate round with your note.",
+            "options": ["approve", "reject", "send_back"],
+            "required": true
+          },
+          {
+            "name": "decision_reason",
+            "type": "TEXT",
+            "label": "Decision Reason",
+            "description": "Required: explain why you are overriding, upholding, or sending back the council verdict.",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "process_hitl",
+      "type": "AGENT",
+      "label": "Process HITL Decision",
+      "config": {
+        "agent_name": "panchai-brain",
+        "input_mapping": {
+          "session_id": { "type": "expression", "value": "deliberate.output.session_id" },
+          "decision": { "type": "expression", "value": "hitl_approval.output.decision" },
+          "decision_reason": { "type": "expression", "value": "hitl_approval.output.decision_reason" }
+        }
+      }
+    },
+    {
+      "id": "done",
+      "type": "END",
+      "label": "Done"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "deliberate",
+      "target": "hitl_approval",
+      "condition": { "type": "expression", "value": "deliberate.output.hitl_required == true" }
+    },
+    {
+      "id": "e2",
+      "source": "deliberate",
+      "target": "done",
+      "condition": { "type": "expression", "value": "deliberate.output.hitl_required != true" }
+    },
+    {
+      "id": "e3",
+      "source": "hitl_approval",
+      "target": "process_hitl"
+    },
+    {
+      "id": "e4",
+      "source": "process_hitl",
+      "target": "done"
+    }
+  ]
+}
