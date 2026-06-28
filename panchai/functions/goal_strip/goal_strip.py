@@ -1,3 +1,7 @@
+#input_type_name: GoalStripInput
+#output_type_name: GoalStripOutput
+#function_name: goal_strip
+
 """
 Goal Stripper — Blind Tribunal Protocol
 ========================================

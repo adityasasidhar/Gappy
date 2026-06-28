@@ -14,7 +14,7 @@
       "options": ["FOR", "AGAINST", "ABSTAIN", "REFRAME"] },
     { "name": "argument", "type": "TEXT", "required": true,
       "description": "The agent's full argument text" },
-    { "name": "round_number", "type": "INT", "required": true },
+    { "name": "round_number", "type": "INTEGER", "required": true },
     { "name": "reasoning_bias", "type": "TEXT",
       "description": "The agent's bias label for display" }
   ],

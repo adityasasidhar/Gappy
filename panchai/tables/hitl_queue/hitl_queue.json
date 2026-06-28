@@ -16,7 +16,7 @@
       "options": ["approve", "reject", "send_back"] },
     { "name": "decision_reason", "type": "TEXT",
       "description": "Human reviewer's rationale" },
-    { "name": "escalation_tier", "type": "INT", "default": 1,
+    { "name": "escalation_tier", "type": "INTEGER", "default": 1,
       "description": "Current escalation level" }
   ],
   "config": {}

@@ -1,3 +1,7 @@
+#input_type_name: Input
+#output_type_name: Output
+#function_name: registry_lookup
+
 """
 registry_lookup — PANCHAI council assembly function.
 

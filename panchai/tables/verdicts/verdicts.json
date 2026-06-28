@@ -8,7 +8,7 @@
       "description": "FK to debate_sessions" },
     { "name": "verdict", "type": "ENUM", "required": true,
       "options": ["APPROVED", "REJECTED", "ESCALATED", "REFRAMED"] },
-    { "name": "confidence_score", "type": "REAL", "required": true,
+    { "name": "confidence_score", "type": "FLOAT", "required": true,
       "description": "0.0 to 1.0 confidence in the verdict" },
     { "name": "council_vote_for", "type": "TEXT",
       "description": "JSON array of agent IDs who voted FOR" },

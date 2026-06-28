@@ -16,7 +16,7 @@
       "options": ["STANDARD", "HIGH"] },
     { "name": "status", "type": "ENUM", "required": true, "default": "pending",
       "options": ["pending", "stripping", "pre_mortem", "debating", "voting", "verdict", "hitl", "done", "failed"] },
-    { "name": "council_size", "type": "INT", "default": 3,
+    { "name": "council_size", "type": "INTEGER", "default": 3,
       "description": "Number of agents on the deliberation council" },
     { "name": "task_context", "type": "TEXT",
       "description": "Additional context or data for the task" }

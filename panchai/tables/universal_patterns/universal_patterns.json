@@ -14,7 +14,7 @@
       "description": "How humans typically resolve this pattern" },
     { "name": "pattern_description", "type": "TEXT",
       "description": "Human-readable description of the pattern" },
-    { "name": "occurrence_count", "type": "INT", "default": 0,
+    { "name": "occurrence_count", "type": "INTEGER", "default": 0,
       "description": "Number of times this pattern has been observed" }
   ],
   "config": {}

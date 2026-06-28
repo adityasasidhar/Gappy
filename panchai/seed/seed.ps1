@@ -17,7 +17,7 @@ $policyAnalyst = @{
     description = "Evaluates decisions against documented policies and regulatory frameworks. Bias toward strict rule adherence."
 } | ConvertTo-Json -Compress
 
-lemma tables insert $POD agent_catalog --data $policyAnalyst
+lemma --pod $POD records create agent_catalog --data $policyAnalyst
 
 $customerAdvocate = @{
     agent_id = "customer_advocate"
@@ -28,7 +28,7 @@ $customerAdvocate = @{
     description = "Champions the customer perspective, factoring satisfaction, retention, and consumer rights into deliberation."
 } | ConvertTo-Json -Compress
 
-lemma tables insert $POD agent_catalog --data $customerAdvocate
+lemma --pod $POD records create agent_catalog --data $customerAdvocate
 
 $fraudRiskAssessor = @{
     agent_id = "fraud_risk_assessor"
@@ -39,7 +39,7 @@ $fraudRiskAssessor = @{
     description = "Identifies fraud patterns, risk signals, and abuse indicators. Bias toward conservative risk assessment."
 } | ConvertTo-Json -Compress
 
-lemma tables insert $POD agent_catalog --data $fraudRiskAssessor
+lemma --pod $POD records create agent_catalog --data $fraudRiskAssessor
 
 # ── Insert Binocs agent catalog ─────────────────────────────────────────────
 Write-Host "  → Creating Binocs agent catalog..." -ForegroundColor Yellow
@@ -53,7 +53,7 @@ $supplyChainAnalyst = @{
     description = "Optimizes supply chain decisions by analyzing logistics, demand signals, and inventory levels."
 } | ConvertTo-Json -Compress
 
-lemma tables insert $POD agent_catalog --data $supplyChainAnalyst
+lemma --pod $POD records create agent_catalog --data $supplyChainAnalyst
 
 $financialRisk = @{
     agent_id = "financial_risk"
@@ -64,7 +64,7 @@ $financialRisk = @{
     description = "Evaluates financial exposure, cash flow impact, and vendor risk. Bias toward capital preservation."
 } | ConvertTo-Json -Compress
 
-lemma tables insert $POD agent_catalog --data $financialRisk
+lemma --pod $POD records create agent_catalog --data $financialRisk
 
 $procurementSpecialist = @{
     agent_id = "procurement_specialist"
@@ -75,7 +75,7 @@ $procurementSpecialist = @{
     description = "Manages vendor relationships and procurement decisions. Optimizes for cost efficiency and delivery reliability."
 } | ConvertTo-Json -Compress
 
-lemma tables insert $POD agent_catalog --data $procurementSpecialist
+lemma --pod $POD records create agent_catalog --data $procurementSpecialist
 
 # ── Insert demo debate sessions ─────────────────────────────────────────────
 Write-Host "  → Creating demo debate sessions..." -ForegroundColor Yellow
@@ -99,11 +99,11 @@ $yesMadamSession = @{
 # Often powershell quoting gets messy, so passing a single well-escaped string is safer.
 $ymData = '{"client_id":"yesmadam","task_input":"Should we approve this refund for Customer #4821? Customer tier Gold, purchase 47 days ago, policy = 30-day returns, claim = product defect, 2 prior refunds in 6 months.","task_context":"{\"customer_tier\":\"Gold\",\"purchase_days_ago\":47,\"return_policy_days\":30,\"claim_type\":\"product_defect\",\"prior_refunds_6mo\":2}","status":"pending"}'
 
-lemma tables insert $POD debate_sessions --data $ymData
+lemma --pod $POD records create debate_sessions --data $ymData
 
 $binocsData = '{"client_id":"binocs","task_input":"Should we pause this vendor order? Inventory 340 units, demand forecast 280 units, vendor reliability 62%, lead time 45 days, cash position tight.","task_context":"{\"inventory_units\":340,\"demand_forecast\":280,\"vendor_reliability_pct\":62,\"lead_time_days\":45,\"cash_position\":\"tight\"}","status":"pending"}'
 
-lemma tables insert $POD debate_sessions --data $binocsData
+lemma --pod $POD records create debate_sessions --data $binocsData
 
 Write-Host ""
 Write-Host "✅ PANCHAI seed data loaded!" -ForegroundColor Green

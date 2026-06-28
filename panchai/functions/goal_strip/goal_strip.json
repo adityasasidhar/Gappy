@@ -1,21 +1,6 @@
 {
   "name": "goal_strip",
   "description": "Separates task facts from user desired outcome for the Blind Tribunal Protocol. Deterministic, no LLM.",
-  "handler": "goal_strip.py:goal_strip",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "task_input": { "type": "string", "description": "Raw user task input" }
-    },
-    "required": ["task_input"]
-  },
-  "output_schema": {
-    "type": "object",
-    "properties": {
-      "stripped_task": { "type": "string" },
-      "user_goal": { "type": "string" },
-      "stakes_level": { "type": "string", "enum": ["STANDARD", "HIGH"] }
-    },
-    "required": ["stripped_task", "user_goal", "stakes_level"]
-  }
+  "type": "API",
+  "code": {"$file": "goal_strip.py"}
 }

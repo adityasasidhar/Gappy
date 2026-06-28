@@ -24,27 +24,41 @@
       }
     },
     {
+      "id": "check_hitl",
+      "type": "DECISION",
+      "label": "HITL Required?",
+      "config": {
+        "rules": [
+          {
+            "condition": "deliberate.output.hitl_required == `true`",
+            "next_node_id": "hitl_approval"
+          }
+        ]
+      }
+    },
+    {
       "id": "hitl_approval",
       "type": "FORM",
       "label": "Human-in-the-Loop Approval",
       "config": {
-        "form_fields": [
-          {
-            "name": "decision",
-            "type": "ENUM",
-            "label": "Decision",
-            "description": "Approve to override council and proceed, Reject to uphold council verdict, or Send Back to trigger one more debate round with your note.",
-            "options": ["approve", "reject", "send_back"],
-            "required": true
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "type": "string",
+              "enum": ["approve", "reject", "send_back"],
+              "description": "Approve to override council and proceed, Reject to uphold council verdict, or Send Back to trigger one more debate round with your note."
+            },
+            "decision_reason": {
+              "type": "string",
+              "description": "Required: explain why you are overriding, upholding, or sending back the council verdict."
+            }
           },
-          {
-            "name": "decision_reason",
-            "type": "TEXT",
-            "label": "Decision Reason",
-            "description": "Required: explain why you are overriding, upholding, or sending back the council verdict.",
-            "required": true
-          }
-        ]
+          "required": ["decision", "decision_reason"]
+        },
+        "ui_schema": {
+          "ui:order": ["decision", "decision_reason"]
+        }
       }
     },
     {
@@ -70,22 +84,25 @@
     {
       "id": "e1",
       "source": "deliberate",
-      "target": "hitl_approval",
-      "condition": { "type": "expression", "value": "deliberate.output.hitl_required == true" }
+      "target": "check_hitl"
     },
     {
       "id": "e2",
-      "source": "deliberate",
-      "target": "done",
-      "condition": { "type": "expression", "value": "deliberate.output.hitl_required != true" }
+      "source": "check_hitl",
+      "target": "hitl_approval"
     },
     {
       "id": "e3",
+      "source": "check_hitl",
+      "target": "done"
+    },
+    {
+      "id": "e4",
       "source": "hitl_approval",
       "target": "process_hitl"
     },
     {
-      "id": "e4",
+      "id": "e5",
       "source": "process_hitl",
       "target": "done"
     }

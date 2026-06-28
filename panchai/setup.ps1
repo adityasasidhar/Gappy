@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 
 Write-Host "🏛️ PANCHAI Setup" -ForegroundColor Cyan
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
@@ -19,7 +19,7 @@ Write-Host "✅ Pod imported successfully!" -ForegroundColor Green
 Write-Host ""
 
 # Ask about seed data
-$LoadSeed = Read-Host "Load demo seed data (YesMadam & Binocs scenarios)? (y/N)"
+$LoadSeed = Read-Host "Load demo seed data (YesMadam `& Binocs scenarios)? (y/N)"
 if ($LoadSeed -match '^[Yy]') {
     Write-Host "🌱 Loading seed data..." -ForegroundColor Yellow
     & "$ScriptDir\seed\seed.ps1"
