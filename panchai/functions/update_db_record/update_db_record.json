@@ -1,0 +1,16 @@
+{
+  "name": "update_db_record",
+  "description": "Updates a record in any table by record ID. Takes table_name, record_id, and data as a JSON string.",
+  "type": "API",
+  "code": {"$file": "update_db_record.py"},
+  "permissions": {
+    "grants": [
+      {"resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "debate_rounds", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "debate_messages", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "pre_mortems", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "verdicts", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "hitl_queue", "permission_ids": ["datastore.table.read", "datastore.record.write"]}
+    ]
+  }
+}

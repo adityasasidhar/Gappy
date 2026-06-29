@@ -1,0 +1,16 @@
+{
+  "name": "write_db_record",
+  "description": "Creates a record in any table. Takes table_name and data as a JSON string. Returns the record ID.",
+  "type": "API",
+  "code": {"$file": "write_db_record.py"},
+  "permissions": {
+    "grants": [
+      {"resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "debate_rounds", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "debate_messages", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "pre_mortems", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "verdicts", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "hitl_queue", "permission_ids": ["datastore.table.read", "datastore.record.write"]}
+    ]
+  }
+}

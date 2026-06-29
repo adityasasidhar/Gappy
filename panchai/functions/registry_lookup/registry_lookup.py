@@ -92,32 +92,27 @@ async def registry_lookup(ctx: FunctionContext, data: Input) -> Output:
     max_council = 5 if data.stakes_level == "HIGH" else 3
 
     # Fetch all agents for this client
-    catalog_table = pod.get_table("agent_catalog")
-    rows = await catalog_table.query(
-        filters={"client_id": data.client_id}
+    result = pod.records.list(
+        "agent_catalog",
+        filter=[{"field": "client_id", "op": "eq", "value": data.client_id}]
     )
+    rows = result.items
+    rows = [r.to_dict() if hasattr(r, 'to_dict') else dict(r) for r in rows]
 
     if not rows:
-        # No agents registered for this client — return empty council
         return Output(selected_agents=[], council_size=0)
 
-    # Tokenize the task
     task_keywords = _tokenize(data.stripped_task)
 
-    # Score each agent
     scored: list[tuple[int, dict]] = []
     for row in rows:
         score = _score_agent(task_keywords, row.get("capabilities", "[]"))
         scored.append((score, row))
 
-    # Sort descending by score, then by agent_id for deterministic ordering
     scored.sort(key=lambda pair: (-pair[0], pair[1].get("agent_id", "")))
 
-    # If no agent has any keyword overlap, still return the first N agents
-    # (ensures the debate always has a council)
     selected_rows = scored[:max_council]
 
-    # Build output
     selected_agents = [
         SelectedAgent(
             agent_id=row.get("agent_id", ""),

@@ -2,5 +2,17 @@
   "name": "registry_lookup",
   "description": "Looks up the agent_catalog for a given client, matches agent capabilities against the stripped task keywords, and returns a council of agents sized by stakes level (3 for STANDARD, up to 5 for HIGH).",
   "type": "API",
-  "code": {"$file": "registry_lookup.py"}
+  "code": {"$file": "registry_lookup.py"},
+  "permissions": {
+    "grants": [
+      {
+        "resource_type": "datastore_table",
+        "resource_name": "agent_catalog",
+        "permission_ids": [
+          "datastore.table.read",
+          "datastore.record.read"
+        ]
+      }
+    ]
+  }
 }

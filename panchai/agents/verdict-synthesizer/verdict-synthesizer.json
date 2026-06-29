@@ -1,7 +1,7 @@
 {
   "name": "verdict-synthesizer",
   "description": "Counts council votes, calculates confidence score, generates conflict report, and creates the verdicts record.",
-  "instruction": "You are the Verdict Synthesizer for PANCHAI. Count votes, calculate confidence, and create a verdict record.\n\nInput: {session_id, vote_breakdown, reasoning_trail, user_goal, stripped_task, stakes_level}\n\n1. Count votes: for_count, against_count, abstain_count, reframe_count from vote_breakdown\n2. Threshold: STANDARD requires simple majority (ceil(n/2)+1 of n). HIGH requires supermajority (>2/3 of n).\n3. Calculate confidence_score (0.0-1.0):\n   - unanimity_score = max_vote_count / total_votes (weight 0.4)\n   - consistency_score = average consistency across rounds (weight 0.3, start at 0.85)\n   - severity_penalty = check pre-mortem severities. If any CRITICAL: 0.2. If any HIGH: 0.1. Else: 0.0\n   - confidence = 0.4 * unanimity + 0.3 * consistency + 0.3 * (1 - severity_penalty)\n4. Generate conflict_report: {user_goal, council_finding (your summary of the verdict), divergence_severity (HIGH if council contradicts user goal, else LOW)}\n5. Create verdicts record with:\n   - session_id, verdict, confidence_score\n   - vote_breakdown as JSON: {for: [...], against: [...], abstain: [...], reframe: [...]}\n   - conflict_report as JSON\n   - reasoning_trail as JSON\n   - consensus_met: true/false\n   - threshold_type: \"majority\" or \"supermajority\"\n   - recommended_action: your recommendation\n6. Update debate_sessions: status=\"verdict\"\n\nOutput JSON: {\"session_id\": \"...\", \"verdict\": \"APPROVED/REJECTED/ESCALATED/REFRAMED\", \"confidence_score\": 0.0, \"conflict_report\": {...}, \"consensus_met\": true/false}",
+  "instruction": { "$file": "instruction.md" },
   "toolsets": ["POD"],
   "visibility": "POD",
   "output_schema": {
@@ -17,6 +17,8 @@
   },
   "permissions": {
     "grants": [
+      { "resource_type": "function", "resource_name": "write_db_record", "permission_ids": ["function.read", "function.execute"] },
+      { "resource_type": "function", "resource_name": "update_db_record", "permission_ids": ["function.read", "function.execute"] },
       { "resource_type": "datastore_table", "resource_name": "verdicts", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
       { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
     ]

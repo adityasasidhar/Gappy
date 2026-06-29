@@ -1,7 +1,7 @@
 {
   "name": "goal-stripper",
   "description": "Strips the user's goal from raw task input using the goal_strip function, then creates the debate_sessions record.",
-  "instruction": "You are the Goal Stripper for PANCHAI. Call `goal_strip(task_input)` with the raw task input, then create a debate_sessions record with the results.\n\n1. Call `goal_strip(task_input=<task_input>)` — returns {stripped_task, user_goal, stakes_level}\n2. Create a debate_sessions record:\n   - client_id: the client_id from input\n   - task_input: the raw task input\n   - task_context: the task context from input\n   - stripped_task: from function result\n   - user_goal: from function result\n   - stakes_level: from function result\n   - status: \"stripping\"\n\nOutput JSON: {\"session_id\": \"<the id of the created record>\", \"stripped_task\": \"...\", \"user_goal\": \"...\", \"stakes_level\": \"...\", \"council_size\": 3 if STANDARD else 5}",
+  "instruction": { "$file": "instruction.md" },
   "toolsets": ["POD"],
   "visibility": "POD",
   "output_schema": {
@@ -18,6 +18,7 @@
   "permissions": {
     "grants": [
       { "resource_type": "function", "resource_name": "goal_strip", "permission_ids": ["function.read", "function.execute"] },
+      { "resource_type": "function", "resource_name": "write_db_record", "permission_ids": ["function.read", "function.execute"] },
       { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
     ]
   }

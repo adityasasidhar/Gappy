@@ -4,15 +4,31 @@
   "start": { "type": "MANUAL" },
   "nodes": [
     {
+      "id": "intake",
+      "type": "FORM",
+      "label": "Intake",
+      "config": {
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "task_input": { "type": "string", "title": "Task Input" },
+            "client_id": { "type": "string", "title": "Client ID" },
+            "task_context": { "type": "string", "title": "Task Context (JSON)" }
+          },
+          "required": ["task_input", "client_id", "task_context"]
+        }
+      }
+    },
+    {
       "id": "goal_stripper",
       "type": "AGENT",
       "label": "Goal Stripper",
       "config": {
         "agent_name": "goal-stripper",
         "input_mapping": {
-          "task_input": { "type": "expression", "value": "start.payload.task_input" },
-          "client_id": { "type": "expression", "value": "start.payload.client_id" },
-          "task_context": { "type": "expression", "value": "start.payload.task_context" }
+          "task_input": { "type": "expression", "value": "intake.task_input" },
+          "client_id": { "type": "expression", "value": "intake.client_id" },
+          "task_context": { "type": "expression", "value": "intake.task_context" }
         }
       }
     },
@@ -25,7 +41,7 @@
         "input_mapping": {
           "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
           "stripped_task": { "type": "expression", "value": "goal_stripper.stripped_task" },
-          "client_id": { "type": "expression", "value": "start.payload.client_id" },
+          "client_id": { "type": "expression", "value": "intake.client_id" },
           "stakes_level": { "type": "expression", "value": "goal_stripper.stakes_level" },
           "council_size": { "type": "expression", "value": "goal_stripper.council_size" }
         }
@@ -111,14 +127,19 @@
       "config": {
         "agent_name": "panchai-brain",
         "input_mapping": {
+          "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
+          "hitl_queue_id": { "type": "expression", "value": "hitl_check.hitl_queue_id" },
           "decision": { "type": "expression", "value": "hitl_approval.decision" },
-          "decision_reason": { "type": "expression", "value": "hitl_approval.decision_reason" }
+          "decision_reason": { "type": "expression", "value": "hitl_approval.decision_reason" },
+          "verdict": { "type": "expression", "value": "verdict.verdict" },
+          "confidence_score": { "type": "expression", "value": "verdict.confidence_score" }
         }
       }
     },
     { "id": "done", "type": "END", "label": "Done" }
   ],
   "edges": [
+    { "id": "e1", "source": "intake", "target": "goal_stripper" },
     { "id": "e2", "source": "goal_stripper", "target": "pre_mortem" },
     { "id": "e3", "source": "pre_mortem", "target": "debate" },
     { "id": "e4", "source": "debate", "target": "verdict" },
