@@ -1,0 +1,24 @@
+{
+  "name": "debate-moderator",
+  "description": "Moderates 3 rounds of structured blind debate between council agents, creating debate_messages records.",
+  "instruction": "You are the Debate Moderator for PANCHAI. Given a stripped_task and council agents, run 3 rounds of structured debate.\n\nInput: {session_id, stripped_task, agent_ids, pre_mortems, council_size}\n\nRound 1 — Initial Positions:\n1. Create debate_rounds: round_number=1, round_type=\"debate\", status=\"in_progress\"\n2. For each agent_id, create a debate_messages record with their position (FOR/AGAINST/ABSTAIN/REFRAME), argument, confidence 0.0-1.0, key_evidence, round_number=1\n3. Update round status=\"completed\"\n\nRound 2 — Targeted Challenges:\n1. Create debate_rounds: round_number=2, round_type=\"debate\", status=\"in_progress\"\n2. Analyze Round 1 positions, identify core disagreement. Create targeted challenge messages for each agent.\n3. Update round status=\"completed\"\n\nRound 3 — Final Positions:\n1. Create debate_rounds: round_number=3, round_type=\"debate\", status=\"in_progress\"\n2. Each agent submits their FINAL position addressing the full debate.\n3. Update round status=\"completed\"\n\nUse realistic agent roles: policy-analyst (policy-first), customer-advocate (empathy-first), fraud-risk-assessor (risk-first), financial-risk (cost-first), supply-chain-analyst (logistics-first), procurement-specialist (rules-first)\n\nOutput JSON: {\"session_id\": \"...\", \"vote_breakdown\": {\"for\": [\"agent_ids\"], \"against\": [\"agent_ids\"], \"abstain\": [\"agent_ids\"], \"reframe\": [\"agent_ids\"]}, \"reasoning_trail\": [{\"round\": 1, \"agent\": \"...\", \"position\": \"...\", \"confidence\": 0.0}], \"final_positions\": [{\"agent_id\":\"...\", \"position\":\"...\", \"confidence\":0.0, \"argument\":\"...\"}]}",
+  "toolsets": ["POD"],
+  "visibility": "POD",
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "session_id": { "type": "string" },
+      "vote_breakdown": { "type": "object" },
+      "reasoning_trail": { "type": "array" },
+      "final_positions": { "type": "array" }
+    },
+    "required": ["session_id", "vote_breakdown", "reasoning_trail", "final_positions"]
+  },
+  "permissions": {
+    "grants": [
+      { "resource_type": "datastore_table", "resource_name": "debate_rounds", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "debate_messages", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read"] }
+    ]
+  }
+}

@@ -1,25 +1,81 @@
 {
   "name": "debate-pipeline",
-  "description": "PANCHAI deliberation pipeline. Triggered when a new debate_sessions row is inserted. The panchai-brain orchestrates goal stripping, pre-mortem, agent selection, blind debate, and verdict synthesis. Routes to HITL approval when triggered.",
-  "start": {
-    "type": "DATASTORE_EVENT",
-    "config": {
-      "table_name": "debate_sessions",
-      "operations": ["INSERT"]
-    }
-  },
+  "description": "PANCHAI deliberation pipeline with 5 specialized agents: goal-stripper → pre-mortem → debate → verdict → hitl-check → HITL approval → done.",
+  "start": { "type": "MANUAL" },
   "nodes": [
     {
-      "id": "deliberate",
+      "id": "goal_stripper",
       "type": "AGENT",
-      "label": "Deliberate",
+      "label": "Goal Stripper",
       "config": {
-        "agent_name": "panchai-brain",
+        "agent_name": "goal-stripper",
         "input_mapping": {
-          "session_id": { "type": "expression", "value": "start.metadata.record_id" },
           "task_input": { "type": "expression", "value": "start.payload.task_input" },
           "client_id": { "type": "expression", "value": "start.payload.client_id" },
-          "task_context": { "type": "expression", "value": "start.payload.task_context", "optional": true }
+          "task_context": { "type": "expression", "value": "start.payload.task_context" }
+        }
+      }
+    },
+    {
+      "id": "pre_mortem",
+      "type": "AGENT",
+      "label": "Pre-Mortem",
+      "config": {
+        "agent_name": "pre-mortem-orchestrator",
+        "input_mapping": {
+          "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
+          "stripped_task": { "type": "expression", "value": "goal_stripper.stripped_task" },
+          "client_id": { "type": "expression", "value": "start.payload.client_id" },
+          "stakes_level": { "type": "expression", "value": "goal_stripper.stakes_level" },
+          "council_size": { "type": "expression", "value": "goal_stripper.council_size" }
+        }
+      }
+    },
+    {
+      "id": "debate",
+      "type": "AGENT",
+      "label": "Debate Moderator",
+      "config": {
+        "agent_name": "debate-moderator",
+        "input_mapping": {
+          "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
+          "stripped_task": { "type": "expression", "value": "goal_stripper.stripped_task" },
+          "agent_ids": { "type": "expression", "value": "pre_mortem.agent_ids" },
+          "pre_mortems": { "type": "expression", "value": "pre_mortem.pre_mortems" },
+          "council_size": { "type": "expression", "value": "goal_stripper.council_size" }
+        }
+      }
+    },
+    {
+      "id": "verdict",
+      "type": "AGENT",
+      "label": "Verdict Synthesizer",
+      "config": {
+        "agent_name": "verdict-synthesizer",
+        "input_mapping": {
+          "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
+          "vote_breakdown": { "type": "expression", "value": "debate.vote_breakdown" },
+          "reasoning_trail": { "type": "expression", "value": "debate.reasoning_trail" },
+          "user_goal": { "type": "expression", "value": "goal_stripper.user_goal" },
+          "stripped_task": { "type": "expression", "value": "goal_stripper.stripped_task" },
+          "stakes_level": { "type": "expression", "value": "goal_stripper.stakes_level" }
+        }
+      }
+    },
+    {
+      "id": "hitl_check",
+      "type": "AGENT",
+      "label": "HITL Check",
+      "config": {
+        "agent_name": "hitl-checker",
+        "input_mapping": {
+          "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
+          "verdict": { "type": "expression", "value": "verdict.verdict" },
+          "confidence_score": { "type": "expression", "value": "verdict.confidence_score" },
+          "conflict_report": { "type": "expression", "value": "verdict.conflict_report" },
+          "has_critical": { "type": "expression", "value": "pre_mortem.has_critical" },
+          "consensus_met": { "type": "expression", "value": "verdict.consensus_met" },
+          "vote_breakdown": { "type": "expression", "value": "debate.vote_breakdown" }
         }
       }
     },
@@ -29,10 +85,7 @@
       "label": "HITL Required?",
       "config": {
         "rules": [
-          {
-            "condition": "deliberate.output.hitl_required == `true`",
-            "next_node_id": "hitl_approval"
-          }
+          { "condition": "hitl_check.hitl_required == `true`", "next_node_id": "hitl_approval" }
         ]
       }
     },
@@ -44,67 +97,36 @@
         "input_schema": {
           "type": "object",
           "properties": {
-            "decision": {
-              "type": "string",
-              "enum": ["approve", "reject", "send_back"],
-              "description": "Approve to override council and proceed, Reject to uphold council verdict, or Send Back to trigger one more debate round with your note."
-            },
-            "decision_reason": {
-              "type": "string",
-              "description": "Required: explain why you are overriding, upholding, or sending back the council verdict."
-            }
+            "decision": { "type": "string", "enum": ["approve", "reject", "send_back"] },
+            "decision_reason": { "type": "string" }
           },
           "required": ["decision", "decision_reason"]
-        },
-        "ui_schema": {
-          "ui:order": ["decision", "decision_reason"]
         }
       }
     },
     {
       "id": "process_hitl",
       "type": "AGENT",
-      "label": "Process HITL Decision",
+      "label": "Process HITL",
       "config": {
         "agent_name": "panchai-brain",
         "input_mapping": {
-          "session_id": { "type": "expression", "value": "deliberate.output.session_id" },
-          "decision": { "type": "expression", "value": "hitl_approval.output.decision" },
-          "decision_reason": { "type": "expression", "value": "hitl_approval.output.decision_reason" }
+          "decision": { "type": "expression", "value": "hitl_approval.decision" },
+          "decision_reason": { "type": "expression", "value": "hitl_approval.decision_reason" }
         }
       }
     },
-    {
-      "id": "done",
-      "type": "END",
-      "label": "Done"
-    }
+    { "id": "done", "type": "END", "label": "Done" }
   ],
   "edges": [
-    {
-      "id": "e1",
-      "source": "deliberate",
-      "target": "check_hitl"
-    },
-    {
-      "id": "e2",
-      "source": "check_hitl",
-      "target": "hitl_approval"
-    },
-    {
-      "id": "e3",
-      "source": "check_hitl",
-      "target": "done"
-    },
-    {
-      "id": "e4",
-      "source": "hitl_approval",
-      "target": "process_hitl"
-    },
-    {
-      "id": "e5",
-      "source": "process_hitl",
-      "target": "done"
-    }
+    { "id": "e2", "source": "goal_stripper", "target": "pre_mortem" },
+    { "id": "e3", "source": "pre_mortem", "target": "debate" },
+    { "id": "e4", "source": "debate", "target": "verdict" },
+    { "id": "e5", "source": "verdict", "target": "hitl_check" },
+    { "id": "e6", "source": "hitl_check", "target": "check_hitl" },
+    { "id": "e7", "source": "check_hitl", "target": "done" },
+    { "id": "e8", "source": "check_hitl", "target": "hitl_approval" },
+    { "id": "e9", "source": "hitl_approval", "target": "process_hitl" },
+    { "id": "e10", "source": "process_hitl", "target": "done" }
   ]
 }

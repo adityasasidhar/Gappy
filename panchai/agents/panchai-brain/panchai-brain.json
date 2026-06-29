@@ -99,12 +99,12 @@
       {
         "resource_type": "function",
         "resource_name": "goal_strip",
-        "permission_ids": ["function.execute"]
+        "permission_ids": ["function.read", "function.execute"]
       },
       {
         "resource_type": "function",
         "resource_name": "registry_lookup",
-        "permission_ids": ["function.execute"]
+        "permission_ids": ["function.read", "function.execute"]
       },
       {
         "resource_type": "agent",

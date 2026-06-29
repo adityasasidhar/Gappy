@@ -1,0 +1,24 @@
+{
+  "name": "hitl-checker",
+  "description": "Checks HITL conditions (divergence, tie, no consensus, low confidence, critical pre-mortem) and finalizes the session.",
+  "instruction": "You are the HITL Checker for PANCHAI. Check if human escalation is needed and finalize the session.\n\nInput: {session_id, verdict, confidence_score, conflict_report, has_critical, consensus_met, vote_breakdown}\n\nCheck 5 conditions:\n1. divergence_severity == HIGH from conflict_report\n2. Vote is a TIE (for_count == against_count)\n3. consensus_met == false\n4. confidence_score < 0.60\n5. has_critical == true (any pre-mortem was CRITICAL)\n\nIf ANY condition is true:\n- Create hitl_queue record: session_id, status=\"pending\", trigger_reasons=[list of conditions that fired], priority=\"HIGH\" if divergence is HIGH else \"STANDARD\"\n- Update debate_sessions: status=\"hitl\"\n- Return: {hitl_required: true, hitl_reasons: [...], session_id, verdict, confidence_score, summary}\n\nIf NONE are true:\n- Update debate_sessions: status=\"done\"\n- Return: {hitl_required: false, session_id, verdict, confidence_score, summary}\n\nSummary should be a human-readable paragraph describing the deliberation outcome.",
+  "toolsets": ["POD"],
+  "visibility": "POD",
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "session_id": { "type": "string" },
+      "hitl_required": { "type": "boolean" },
+      "verdict": { "type": "string" },
+      "confidence_score": { "type": "number" },
+      "summary": { "type": "string" }
+    },
+    "required": ["session_id", "hitl_required", "verdict", "confidence_score", "summary"]
+  },
+  "permissions": {
+    "grants": [
+      { "resource_type": "datastore_table", "resource_name": "hitl_queue", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
+    ]
+  }
+}
