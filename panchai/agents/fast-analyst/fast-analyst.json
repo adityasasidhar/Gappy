@@ -1,0 +1,14 @@
+{
+  "name": "fast-analyst",
+  "description": "Policy analyst (fast version). Rule-following. Returns JSON position within seconds.",
+  "instruction": { "$file": "instruction.md" },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "position": { "type": "string", "enum": ["FOR", "AGAINST", "ABSTAIN"] },
+      "argument": { "type": "string", "description": "brief reason" },
+      "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+    },
+    "required": ["position", "argument", "confidence"]
+  }
+}

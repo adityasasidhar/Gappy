@@ -1,0 +1,11 @@
+{
+  "name": "run_council",
+  "description": "Dynamically spawns conversations with a list of agents, sends them a prompt, and returns their responses. Use this instead of hallucinating agent responses.",
+  "type": "API",
+  "code": {"$file": "run_council.py"},
+  "permissions": {
+    "grants": [
+      {"resource_type": "datastore_table", "resource_name": "agent_catalog", "permission_ids": ["datastore.table.read", "datastore.record.read"]}
+    ]
+  }
+}

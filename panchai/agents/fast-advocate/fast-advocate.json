@@ -1,0 +1,14 @@
+{
+  "name": "fast-advocate",
+  "description": "Customer advocate (fast version). Empathetic, user-first. Returns JSON position within seconds.",
+  "instruction": { "$file": "instruction.md" },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "position": { "type": "string", "enum": ["FOR", "AGAINST", "ABSTAIN"] },
+      "argument": { "type": "string", "description": "brief reason" },
+      "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+    },
+    "required": ["position", "argument", "confidence"]
+  }
+}

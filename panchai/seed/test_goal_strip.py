@@ -39,7 +39,7 @@ async def run_tests():
         f"Expected HIGH stakes (fraud/risk keywords), got: {result1.stakes_level}"
     assert "Customer #4821" in result1.stripped_task or "4821" in result1.stripped_task, \
         f"Expected customer reference in stripped task"
-    print("✅ Test 1 PASSED\n")
+    print("[PASS] Test 1 PASSED\n")
 
     # ── Test Case 2: Binocs vendor order ────────────────────────────────
     print("=" * 70)
@@ -61,7 +61,7 @@ async def run_tests():
         f"Expected STANDARD stakes, got: {result2.stakes_level}"
     assert "340" in result2.stripped_task, \
         f"Expected inventory data in stripped task"
-    print("✅ Test 2 PASSED\n")
+    print("[PASS] Test 2 PASSED\n")
 
     # ── Test Case 3: HIGH stakes — financial amount ─────────────────────
     print("=" * 70)
@@ -78,7 +78,7 @@ async def run_tests():
 
     assert result3.stakes_level == "HIGH", \
         f"Expected HIGH stakes ($50K > $10K threshold), got: {result3.stakes_level}"
-    print("✅ Test 3 PASSED\n")
+    print("[PASS] Test 3 PASSED\n")
 
     # ── Test Case 4: Edge case — empty input ────────────────────────────
     print("=" * 70)
@@ -92,10 +92,10 @@ async def run_tests():
     print(f"stakes_level:  {result4.stakes_level}")
 
     assert result4.stakes_level == "STANDARD"
-    print("✅ Test 4 PASSED\n")
+    print("[PASS] Test 4 PASSED\n")
 
     print("=" * 70)
-    print("ALL TESTS PASSED ✅")
+    print("ALL TESTS PASSED [PASS]")
     print("=" * 70)
 
 asyncio.run(run_tests())

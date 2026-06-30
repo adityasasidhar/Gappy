@@ -1,0 +1,1 @@
+{"task_input":"Should we approve a 50 dollar refund for customer order 12345 who claims the product arrived damaged. The customer has been a Gold-tier member for 2 years.","client_id":"yesmadam","task_context":"order 12345, amount 50, tier gold, reason damaged"}

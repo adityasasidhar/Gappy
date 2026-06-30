@@ -16,6 +16,8 @@
       "description": "JSON array of agent IDs who voted AGAINST" },
     { "name": "council_vote_abstain", "type": "TEXT",
       "description": "JSON array of agent IDs who voted ABSTAIN" },
+    { "name": "council_vote_reframe", "type": "TEXT",
+      "description": "JSON array of agent IDs who voted REFRAME" },
     { "name": "conflict_report", "type": "TEXT",
       "description": "JSON: {user_goal, council_finding, divergence_severity}" },
     { "name": "reasoning_trail", "type": "TEXT",

@@ -1,0 +1,13 @@
+{
+  "name": "test_speed",
+  "description": "Measure agent response time",
+  "type": "API",
+  "code": {"$file": "test_speed.py"},
+  "permissions": {
+    "grants": [
+      {"resource_type": "agent", "resource_name": "tiny-council", "permission_ids": ["agent.execute", "agent.read"]},
+      {"resource_type": "agent", "resource_name": "fast-advocate", "permission_ids": ["agent.execute", "agent.read"]},
+      {"resource_type": "agent", "resource_name": "fast-analyst", "permission_ids": ["agent.execute", "agent.read"]}
+    ]
+  }
+}

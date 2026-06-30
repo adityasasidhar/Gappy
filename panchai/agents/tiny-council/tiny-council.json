@@ -1,0 +1,14 @@
+{
+  "name": "tiny-council",
+  "description": "Ultra-light council member. Returns JSON only. No tools.",
+  "instruction": { "$file": "instruction.md" },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "position": { "type": "string", "enum": ["FOR", "AGAINST", "ABSTAIN"] },
+      "argument": { "type": "string" },
+      "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+    },
+    "required": ["position", "argument", "confidence"]
+  }
+}

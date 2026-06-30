@@ -1,24 +1,14 @@
 {
   "name": "debate-pipeline",
   "description": "PANCHAI deliberation pipeline with 5 specialized agents: goal-stripper → pre-mortem → debate → verdict → hitl-check → HITL approval → done.",
-  "start": { "type": "MANUAL" },
+  "start": {
+    "type": "DATASTORE_EVENT",
+    "config": {
+      "table_name": "debate_sessions",
+      "operations": ["INSERT"]
+    }
+  },
   "nodes": [
-    {
-      "id": "intake",
-      "type": "FORM",
-      "label": "Intake",
-      "config": {
-        "input_schema": {
-          "type": "object",
-          "properties": {
-            "task_input": { "type": "string", "title": "Task Input" },
-            "client_id": { "type": "string", "title": "Client ID" },
-            "task_context": { "type": "string", "title": "Task Context (JSON)" }
-          },
-          "required": ["task_input", "client_id", "task_context"]
-        }
-      }
-    },
     {
       "id": "goal_stripper",
       "type": "AGENT",
@@ -26,9 +16,10 @@
       "config": {
         "agent_name": "goal-stripper",
         "input_mapping": {
-          "task_input": { "type": "expression", "value": "intake.task_input" },
-          "client_id": { "type": "expression", "value": "intake.client_id" },
-          "task_context": { "type": "expression", "value": "intake.task_context" }
+          "session_id": { "type": "expression", "value": "start.payload.record_id" },
+          "task_input": { "type": "expression", "value": "start.payload.task_input" },
+          "client_id": { "type": "expression", "value": "start.payload.client_id" },
+          "task_context": { "type": "expression", "value": "start.payload.task_context" }
         }
       }
     },
@@ -41,7 +32,7 @@
         "input_mapping": {
           "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
           "stripped_task": { "type": "expression", "value": "goal_stripper.stripped_task" },
-          "client_id": { "type": "expression", "value": "intake.client_id" },
+          "client_id": { "type": "expression", "value": "start.payload.client_id" },
           "stakes_level": { "type": "expression", "value": "goal_stripper.stakes_level" },
           "council_size": { "type": "expression", "value": "goal_stripper.council_size" }
         }
@@ -86,6 +77,7 @@
         "agent_name": "hitl-checker",
         "input_mapping": {
           "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
+          "verdict_id": { "type": "expression", "value": "verdict.verdict_id" },
           "verdict": { "type": "expression", "value": "verdict.verdict" },
           "confidence_score": { "type": "expression", "value": "verdict.confidence_score" },
           "conflict_report": { "type": "expression", "value": "verdict.conflict_report" },
@@ -139,7 +131,6 @@
     { "id": "done", "type": "END", "label": "Done" }
   ],
   "edges": [
-    { "id": "e1", "source": "intake", "target": "goal_stripper" },
     { "id": "e2", "source": "goal_stripper", "target": "pre_mortem" },
     { "id": "e3", "source": "pre_mortem", "target": "debate" },
     { "id": "e4", "source": "debate", "target": "verdict" },

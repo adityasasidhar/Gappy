@@ -6,6 +6,8 @@
   "columns": [
     { "name": "session_id", "type": "TEXT", "required": true,
       "description": "FK to debate_sessions" },
+    { "name": "round_id", "type": "TEXT",
+      "description": "FK to debate_rounds (round 0 for pre-mortem)" },
     { "name": "agent_id", "type": "TEXT", "required": true },
     { "name": "failure_reason", "type": "TEXT", "required": true,
       "description": "What could go wrong" },

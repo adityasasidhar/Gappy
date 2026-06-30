@@ -1,0 +1,16 @@
+{
+  "name": "batch_write",
+  "description": "Writes multiple records in a single call. Takes an array of {table_name, data_json} and returns array of record_ids in the same order.",
+  "type": "API",
+  "code": {"$file": "batch_write.py"},
+  "permissions": {
+    "grants": [
+      {"resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "debate_rounds", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "debate_messages", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "pre_mortems", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "verdicts", "permission_ids": ["datastore.table.read", "datastore.record.write"]},
+      {"resource_type": "datastore_table", "resource_name": "hitl_queue", "permission_ids": ["datastore.table.read", "datastore.record.write"]}
+    ]
+  }
+}

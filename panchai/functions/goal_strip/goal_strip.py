@@ -61,6 +61,9 @@ LEGAL_TERMS = [
 SAFETY_TERMS = [
     "risk", "fraud", "security", "breach", "vulnerability", "threat",
     "incident", "hazard", "danger", "unsafe", "violation", "abuse",
+    "prior refunds", "refunds in", "multiple refunds", "repeat refunds",
+    "refund abuse", "return abuse", "chargeback", "chargebacks",
+    "suspicious pattern", "red flag", "red flags",
 ]
 
 HEALTH_TERMS = [
@@ -70,7 +73,7 @@ HEALTH_TERMS = [
 ]
 
 
-def _extract_financial_amount(text: str) -> float | None:
+def _extract_financial_amount(text: str):
     """Extract the largest dollar amount from text. Returns None if no match."""
     matches = FINANCIAL_PATTERN.findall(text)
     if not matches:
@@ -161,6 +164,9 @@ def _extract_goal_and_strip(text: str) -> tuple[str, str]:
 
         if is_goal:
             goal_sentences.append(sentence)
+            embedded_fact = _extract_facts_from_goal(sentence).replace("Evaluate the following situation. ", "").strip()
+            if embedded_fact:
+                fact_sentences.append(embedded_fact)
         else:
             fact_sentences.append(sentence)
 
@@ -282,7 +288,7 @@ def _extract_facts_from_goal(text: str) -> str:
     for pattern in GOAL_PHRASES:
         cleaned = re.sub(pattern, "", cleaned, count=1, flags=re.IGNORECASE)
 
-    cleaned = cleaned.strip().lstrip("?").strip()
+    cleaned = cleaned.strip().lstrip("?").strip().rstrip("?.").strip()
 
     # Try to identify the subject and reframe
     return f"Evaluate the following situation. {cleaned}"

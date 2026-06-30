@@ -8,12 +8,13 @@
     "type": "object",
     "properties": {
       "session_id": { "type": "string" },
+      "verdict_id": { "type": "string" },
       "verdict": { "type": "string", "enum": ["APPROVED", "REJECTED", "ESCALATED", "REFRAMED"] },
       "confidence_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
       "conflict_report": { "type": "object" },
       "consensus_met": { "type": "boolean" }
     },
-    "required": ["session_id", "verdict", "confidence_score", "conflict_report", "consensus_met"]
+    "required": ["session_id", "verdict_id", "verdict", "confidence_score", "conflict_report", "consensus_met"]
   },
   "permissions": {
     "grants": [

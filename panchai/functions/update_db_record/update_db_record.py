@@ -15,10 +15,14 @@ class UpdateInput(BaseModel):
 
 class UpdateOutput(BaseModel):
     success: bool
+    error: str = None
 
 
 async def update_db_record(ctx: FunctionContext, data: UpdateInput) -> UpdateOutput:
-    pod = Pod.from_env()
-    payload = json.loads(data.data_json)
-    pod.records.update(data.table_name, data.record_id, payload)
-    return UpdateOutput(success=True)
+    try:
+        pod = Pod.from_env()
+        payload = json.loads(data.data_json)
+        pod.records.update(data.table_name, data.record_id, payload)
+        return UpdateOutput(success=True)
+    except Exception as e:
+        return UpdateOutput(success=False, error=str(e))

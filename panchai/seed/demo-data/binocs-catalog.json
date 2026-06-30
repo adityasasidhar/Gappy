@@ -1,6 +1,7 @@
 [
   {
     "agent_id": "supply_chain_analyst",
+    "agent_name": "Supply Chain Analyst",
     "client_id": "binocs",
     "capabilities": ["supply_chain_optimization", "logistics_analysis", "demand_forecasting", "inventory_management"],
     "reasoning_bias": "operational-efficiency",
@@ -9,6 +10,7 @@
   },
   {
     "agent_id": "financial_risk",
+    "agent_name": "Financial Risk",
     "client_id": "binocs",
     "capabilities": ["risk_scoring", "cash_flow_analysis", "financial_modeling", "vendor_risk"],
     "reasoning_bias": "risk-averse",
@@ -17,6 +19,7 @@
   },
   {
     "agent_id": "procurement_specialist",
+    "agent_name": "Procurement Specialist",
     "client_id": "binocs",
     "capabilities": ["vendor_management", "cost_optimization", "procurement_analysis", "order_management"],
     "reasoning_bias": "cost-optimization",

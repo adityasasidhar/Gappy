@@ -102,10 +102,19 @@ async def registry_lookup(ctx: FunctionContext, data: Input) -> Output:
     if not rows:
         return Output(selected_agents=[], council_size=0)
 
+    # Deduplicate by agent_id — keep the first occurrence per unique agent_id
+    seen: set = set()
+    unique_rows: list[dict] = []
+    for row in rows:
+        aid = row.get("agent_id", "")
+        if aid not in seen:
+            seen.add(aid)
+            unique_rows.append(row)
+
     task_keywords = _tokenize(data.stripped_task)
 
     scored: list[tuple[int, dict]] = []
-    for row in rows:
+    for row in unique_rows:
         score = _score_agent(task_keywords, row.get("capabilities", "[]"))
         scored.append((score, row))
 

@@ -18,8 +18,8 @@
   "permissions": {
     "grants": [
       { "resource_type": "function", "resource_name": "registry_lookup", "permission_ids": ["function.read", "function.execute"] },
-      { "resource_type": "function", "resource_name": "write_db_record", "permission_ids": ["function.read", "function.execute"] },
-      { "resource_type": "function", "resource_name": "update_db_record", "permission_ids": ["function.read", "function.execute"] },
+      { "resource_type": "function", "resource_name": "run_council", "permission_ids": ["function.read", "function.execute"] },
+      { "resource_type": "function", "resource_name": "batch_write", "permission_ids": ["function.read", "function.execute"] },
       { "resource_type": "datastore_table", "resource_name": "agent_catalog", "permission_ids": ["datastore.table.read", "datastore.record.read"] },
       { "resource_type": "datastore_table", "resource_name": "debate_rounds", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
       { "resource_type": "datastore_table", "resource_name": "pre_mortems", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }

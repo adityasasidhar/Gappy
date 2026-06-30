@@ -27,8 +27,8 @@ The seed data includes two distinct enterprise scenarios running on the exact sa
 
 ## Architecture
 
-- **Core Brain Agent**: Orchestrates the 6-phase pipeline.
-- **Council Members**: Domain-specific agents dynamically spawned from the `agent_catalog`.
-- **Goal Stripper (Function)**: Deterministically strips bias from user requests.
-- **Debate Pipeline (Workflow)**: Triggered by a DATASTORE event, routes the flow and handles HITL escalations.
+- **Council Members**: Domain-specific agents dynamically defined in the client's `agent_catalog`.
+- **Goal Stripper (Function)**: Deterministically strips bias and extracts context from user requests.
+- **Debate Pipeline (Function)**: The `run_pipeline` function executes the deliberation flow, creating pre-mortems, debate rounds, messages, and final verdicts in the datastore.
+- **Institutional Memory**: Automatically archives verdicts as markdown documents using Lemma's Files API, which are retrieved using hybrid vector search for context in future councils.
 - **Live UI**: Real-time debate feed powered by Lemma's `watchChanges()` WebSocket API.
