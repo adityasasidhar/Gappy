@@ -59,6 +59,36 @@ def _tokenize(text: str) -> set:
     return {t for t in tokens if len(t) > 2 and t not in _STOP_WORDS}
 
 
+# Synonym mapping dictionary for semantic routing helper
+SYNONYMS = {
+    "cash": {"capital", "funds", "budget", "finance", "monetary", "financial", "treasury", "liquidity"},
+    "capital": {"cash", "funds", "budget", "finance", "monetary", "financial", "treasury", "liquidity"},
+    "funds": {"cash", "capital", "budget", "finance", "monetary", "financial", "treasury", "liquidity"},
+    "budget": {"cash", "capital", "funds", "finance", "monetary", "financial", "treasury", "liquidity"},
+    "financial": {"cash", "capital", "funds", "budget", "finance", "monetary", "treasury", "liquidity"},
+    "finance": {"cash", "capital", "funds", "budget", "financial", "monetary", "treasury", "liquidity"},
+    
+    "refund": {"return", "reimbursement", "chargeback", "defect", "abuse", "fraud", "policy"},
+    "return": {"refund", "reimbursement", "chargeback", "defect", "abuse", "fraud", "policy"},
+    "reimbursement": {"refund", "return", "chargeback", "defect", "abuse", "fraud", "policy"},
+    
+    "inventory": {"stock", "supply", "vendor", "procurement", "order", "replenishment", "warehouse"},
+    "stock": {"inventory", "supply", "vendor", "procurement", "order", "replenishment", "warehouse"},
+    "vendor": {"supplier", "inventory", "stock", "supply", "procurement", "order", "replenishment", "warehouse"},
+    "supplier": {"vendor", "inventory", "stock", "supply", "procurement", "order", "replenishment", "warehouse"},
+}
+
+
+def _expand_synonyms(keywords: set) -> set:
+    """Expand keywords with mapped synonyms for semantic matching fallback."""
+    expanded = set(keywords)
+    for kw in keywords:
+        if kw in SYNONYMS:
+            expanded.update(SYNONYMS[kw])
+    return expanded
+
+
+
 def _score_agent(task_keywords: set, capabilities_json: str) -> int:
     """
     Score an agent by counting how many task keywords appear in its
@@ -112,10 +142,11 @@ async def registry_lookup(ctx: FunctionContext, data: Input) -> Output:
             unique_rows.append(row)
 
     task_keywords = _tokenize(data.stripped_task)
+    expanded_keywords = _expand_synonyms(task_keywords)
 
     scored: list[tuple[int, dict]] = []
     for row in unique_rows:
-        score = _score_agent(task_keywords, row.get("capabilities", "[]"))
+        score = _score_agent(expanded_keywords, row.get("capabilities", "[]"))
         scored.append((score, row))
 
     scored.sort(key=lambda pair: (-pair[0], pair[1].get("agent_id", "")))

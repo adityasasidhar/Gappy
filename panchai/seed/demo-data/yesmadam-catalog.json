@@ -1,29 +1,29 @@
 [
   {
-    "agent_id": "policy_analyst",
+    "agent_id": "policy-analyst",
     "agent_name": "Policy Analyst",
     "client_id": "yesmadam",
     "capabilities": ["policy_check", "compliance_review", "rule_interpretation", "return_policy"],
     "reasoning_bias": "rule-following",
-    "model": "claude-3-haiku",
+    "model": "ministral-3:3b",
     "description": "Evaluates decisions against documented policies and regulatory frameworks. Bias toward strict rule adherence."
   },
   {
-    "agent_id": "customer_advocate",
+    "agent_id": "customer-advocate",
     "agent_name": "Customer Advocate",
     "client_id": "yesmadam",
     "capabilities": ["customer_sentiment", "satisfaction_analysis", "retention_strategy", "consumer_rights"],
     "reasoning_bias": "empathetic",
-    "model": "claude-3-haiku",
+    "model": "ministral-3:3b",
     "description": "Champions the customer perspective, factoring satisfaction, retention, and consumer rights into deliberation."
   },
   {
-    "agent_id": "fraud_risk_assessor",
+    "agent_id": "fraud-risk-assessor",
     "agent_name": "Fraud Risk Assessor",
     "client_id": "yesmadam",
     "capabilities": ["risk_scoring", "fraud_detection", "transaction_analysis", "refund_abuse"],
     "reasoning_bias": "conservative",
-    "model": "claude-3-haiku",
+    "model": "ministral-3:3b",
     "description": "Identifies fraud patterns, risk signals, and abuse indicators. Bias toward conservative risk assessment."
   }
 ]

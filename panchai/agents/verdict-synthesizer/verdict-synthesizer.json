@@ -1,6 +1,6 @@
 {
   "name": "verdict-synthesizer",
-  "description": "Counts council votes, calculates confidence score, generates conflict report, and creates the verdicts record.",
+  "description": "Synthesizes live council deliberation into a persisted structured verdict, conflict report, HITL preview, and institutional-memory artifact when available.",
   "instruction": { "$file": "instruction.md" },
   "toolsets": ["POD"],
   "visibility": "POD",
@@ -11,17 +11,21 @@
       "verdict_id": { "type": "string" },
       "verdict": { "type": "string", "enum": ["APPROVED", "REJECTED", "ESCALATED", "REFRAMED"] },
       "confidence_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+      "council_vote_for": { "type": "array", "items": { "type": "string" } },
+      "council_vote_against": { "type": "array", "items": { "type": "string" } },
+      "council_vote_abstain": { "type": "array", "items": { "type": "string" } },
+      "council_vote_reframe": { "type": "array", "items": { "type": "string" } },
       "conflict_report": { "type": "object" },
-      "consensus_met": { "type": "boolean" }
+      "consensus_met": { "type": "boolean" },
+      "hitl_required": { "type": "boolean" }
     },
-    "required": ["session_id", "verdict_id", "verdict", "confidence_score", "conflict_report", "consensus_met"]
+    "required": ["session_id", "verdict_id", "verdict", "confidence_score", "conflict_report", "consensus_met", "hitl_required"]
   },
   "permissions": {
     "grants": [
-      { "resource_type": "function", "resource_name": "write_db_record", "permission_ids": ["function.read", "function.execute"] },
-      { "resource_type": "function", "resource_name": "update_db_record", "permission_ids": ["function.read", "function.execute"] },
       { "resource_type": "datastore_table", "resource_name": "verdicts", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
-      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
+      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "pre_mortems", "permission_ids": ["datastore.table.read", "datastore.record.read"] }
     ]
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "hitl-checker",
-  "description": "Checks HITL conditions (divergence, tie, no consensus, low confidence, critical pre-mortem) and finalizes the session.",
+  "description": "Applies PANCHAI's five-condition HITL escalation matrix and writes hitl_queue entries when human review is required.",
   "instruction": { "$file": "instruction.md" },
   "toolsets": ["POD"],
   "visibility": "POD",
@@ -9,17 +9,13 @@
     "properties": {
       "session_id": { "type": "string" },
       "hitl_required": { "type": "boolean" },
-      "hitl_queue_id": { "type": "string" },
-      "verdict": { "type": "string" },
-      "confidence_score": { "type": "number" },
-      "summary": { "type": "string" }
+      "hitl_reason": { "type": "string" },
+      "hitl_queue_id": { "type": "string" }
     },
-    "required": ["session_id", "hitl_required", "verdict", "confidence_score", "summary"]
+    "required": ["session_id", "hitl_required", "hitl_reason"]
   },
   "permissions": {
     "grants": [
-      { "resource_type": "function", "resource_name": "write_db_record", "permission_ids": ["function.read", "function.execute"] },
-      { "resource_type": "function", "resource_name": "update_db_record", "permission_ids": ["function.read", "function.execute"] },
       { "resource_type": "datastore_table", "resource_name": "hitl_queue", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
       { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
     ]

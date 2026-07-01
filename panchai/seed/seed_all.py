@@ -8,51 +8,51 @@ POD = "panchai"
 agents = [
     {
         "agent_name": "Policy Analyst",
-        "agent_id": "policy_analyst",
+        "agent_id": "policy-analyst",
         "client_id": "yesmadam",
         "capabilities": json.dumps(["policy_check", "compliance_review", "rule_interpretation", "return_policy"]),
         "reasoning_bias": "rule-following",
-        "model": "claude-3-haiku"
+        "model": "ministral-3:3b"
     },
     {
         "agent_name": "Customer Advocate",
-        "agent_id": "customer_advocate",
+        "agent_id": "customer-advocate",
         "client_id": "yesmadam",
         "capabilities": json.dumps(["customer_sentiment", "satisfaction_analysis", "retention_strategy", "consumer_rights"]),
         "reasoning_bias": "empathetic",
-        "model": "claude-3-haiku"
+        "model": "ministral-3:3b"
     },
     {
         "agent_name": "Fraud Risk Assessor",
-        "agent_id": "fraud_risk_assessor",
+        "agent_id": "fraud-risk-assessor",
         "client_id": "yesmadam",
         "capabilities": json.dumps(["risk_scoring", "fraud_detection", "transaction_analysis", "refund_abuse"]),
         "reasoning_bias": "conservative",
-        "model": "claude-3-haiku"
+        "model": "ministral-3:3b"
     },
     {
         "agent_name": "Supply Chain Analyst",
-        "agent_id": "supply_chain_analyst",
+        "agent_id": "supply-chain-analyst",
         "client_id": "binocs",
         "capabilities": json.dumps(["supply_chain_optimization", "logistics_analysis", "demand_forecasting", "inventory_management"]),
-        "reasoning_bias": "operational-efficiency",
-        "model": "claude-3-haiku"
+        "reasoning_bias": "operational-continuity",
+        "model": "ministral-3:3b"
     },
     {
         "agent_name": "Financial Risk",
-        "agent_id": "financial_risk",
+        "agent_id": "financial-risk",
         "client_id": "binocs",
         "capabilities": json.dumps(["risk_scoring", "cash_flow_analysis", "financial_modeling", "vendor_risk"]),
-        "reasoning_bias": "risk-averse",
-        "model": "claude-3-haiku"
+        "reasoning_bias": "cash-preservation",
+        "model": "ministral-3:3b"
     },
     {
         "agent_name": "Procurement Specialist",
-        "agent_id": "procurement_specialist",
+        "agent_id": "procurement-specialist",
         "client_id": "binocs",
         "capabilities": json.dumps(["vendor_management", "cost_optimization", "procurement_analysis", "order_management"]),
-        "reasoning_bias": "cost-optimization",
-        "model": "claude-3-haiku"
+        "reasoning_bias": "vendor-relationship",
+        "model": "ministral-3:3b"
     }
 ]
 
@@ -72,21 +72,18 @@ def create_record(table, data):
     try:
         return json.loads(out)
     except Exception:
-        # Fallback to regex ID finder if JSON load fails
         m = re.search(r'"id":\s*"([^"]+)"', out)
         if m:
             return {"id": m.group(1)}
         raise ValueError(f"Could not parse created record ID: {out}")
 
-print("[SEED] Seeding PANCHAI with demo data (Python engine)...")
+print("[SEED] Seeding PANCHAI with live-mode demo data...")
 
-# 1. Create agent catalog entries
 print("  -> Creating agent catalog...")
 for a in agents:
     create_record("agent_catalog", a)
 
-# 2. Insert YesMadam session
-print("  -> Creating YesMadam debate session...")
+print("  -> Creating YesMadam pending debate session...")
 ym_data = {
     "client_id": "yesmadam",
     "task_input": "Should we approve this refund for Customer #4821? Customer tier Gold, purchase 47 days ago, policy = 30-day returns, claim = product defect, 2 prior refunds in 6 months.",
@@ -102,11 +99,7 @@ ym_data = {
 ym_rec = create_record("debate_sessions", ym_data)
 ym_id = ym_rec["id"]
 
-print(f"  -> Running pipeline for YesMadam (ID: {ym_id})...")
-run_lemma(["--pod", POD, "functions", "run", "run_pipeline", "--data", json.dumps({"session_id": ym_id}), "--no-wait"])
-
-# 3. Insert Binocs session
-print("  -> Creating Binocs debate session...")
+print("  -> Creating Binocs pending debate session...")
 binocs_data = {
     "client_id": "binocs",
     "task_input": "Should we pause this vendor order? Inventory 340 units, demand forecast 280 units, vendor reliability 62%, lead time 45 days, cash position tight.",
@@ -122,9 +115,60 @@ binocs_data = {
 binocs_rec = create_record("debate_sessions", binocs_data)
 binocs_id = binocs_rec["id"]
 
-print(f"  -> Running pipeline for Binocs (ID: {binocs_id})...")
-run_lemma(["--pod", POD, "functions", "run", "run_pipeline", "--data", json.dumps({"session_id": binocs_id}), "--no-wait"])
+print("  -> Pre-populating realistic verdict examples for the dashboard...")
+create_record("verdicts", {
+    "session_id": ym_id,
+    "verdict": "ESCALATED",
+    "confidence_score": 0.58,
+    "council_vote_for": json.dumps(["customer-advocate"]),
+    "council_vote_against": json.dumps(["policy-analyst", "fraud-risk-assessor"]),
+    "council_vote_abstain": json.dumps([]),
+    "council_vote_reframe": json.dumps([]),
+    "conflict_report": json.dumps({
+        "user_goal": "Approve the refund",
+        "council_finding": "Reject or escalate pending defect verification because the request is outside the 30-day return window and has repeat-refund risk.",
+        "divergence_severity": "HIGH",
+        "explanation": "The council finding directly conflicts with the submitted approval goal."
+    }),
+    "reasoning_trail": json.dumps([
+        {"round": 1, "agent": "policy-analyst", "position": "AGAINST", "argument_summary": "30-day return policy is exceeded without a documented exception."},
+        {"round": 1, "agent": "customer-advocate", "position": "FOR", "argument_summary": "Gold-tier customer and defect claim justify service recovery if the defect is verified."},
+        {"round": 1, "agent": "fraud-risk-assessor", "position": "AGAINST", "argument_summary": "Two prior refunds in six months raises abuse risk."}
+    ]),
+    "pre_mortem_summary": json.dumps([]),
+    "hitl_required": True,
+    "hitl_reason": "High divergence from user goal and low confidence require human review.",
+    "recommended_action": "Escalate to a human approver with defect evidence and refund-history context.",
+    "minority_dissent": "Customer Advocate: verify the defect before denying a loyal customer."
+})
 
-print("\n[SUCCESS] PANCHAI seed data loaded successfully!")
+create_record("verdicts", {
+    "session_id": binocs_id,
+    "verdict": "REFRAMED",
+    "confidence_score": 0.72,
+    "council_vote_for": json.dumps([]),
+    "council_vote_against": json.dumps([]),
+    "council_vote_abstain": json.dumps([]),
+    "council_vote_reframe": json.dumps(["supply-chain-analyst", "financial-risk", "procurement-specialist"]),
+    "conflict_report": json.dumps({
+        "user_goal": "Pause the vendor order",
+        "council_finding": "Reframe to a partial staggered order with payment renegotiation, preserving supply coverage while easing cash pressure.",
+        "divergence_severity": "MEDIUM",
+        "explanation": "The council rejects the binary pause but preserves the underlying cash objective."
+    }),
+    "reasoning_trail": json.dumps([
+        {"round": 1, "agent": "supply-chain-analyst", "position": "REFRAME", "argument_summary": "45-day lead time makes a full pause operationally risky."},
+        {"round": 1, "agent": "financial-risk", "position": "REFRAME", "argument_summary": "Cash pressure is real, but staged ordering lowers risk."},
+        {"round": 1, "agent": "procurement-specialist", "position": "REFRAME", "argument_summary": "Negotiate terms instead of damaging vendor reliability."}
+    ]),
+    "pre_mortem_summary": json.dumps([]),
+    "hitl_required": False,
+    "hitl_reason": "Consensus reframe with adequate confidence.",
+    "recommended_action": "Proceed with a partial order and renegotiated payment terms.",
+    "minority_dissent": ""
+})
+
+print("\n[SUCCESS] PANCHAI live-mode seed data loaded successfully!")
 print("   6 agent_catalog entries created.")
-print("   2 debate sessions initialized and processed in the pipeline.")
+print("   2 pending sessions created for DATASTORE_EVENT workflow processing.")
+print("   2 realistic verdict examples added for immediate dashboard display.")

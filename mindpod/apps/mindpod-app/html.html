@@ -961,8 +961,9 @@
 
 <script>
 /* ── Config (injected by Lemma at runtime) ── */
-const LEMMA_BASE = window.__LEMMA_BASE_URL__ || '';
-const POD_ID    = window.__LEMMA_POD_ID__ || '';
+const LEMMA_CONFIG = window.__LEMMA_CONFIG__ || {};
+const LEMMA_BASE = LEMMA_CONFIG.apiUrl || window.__LEMMA_BASE_URL__ || '';
+const POD_ID    = LEMMA_CONFIG.podId || window.__LEMMA_POD_ID__ || '';
 const TOKEN     = window.__LEMMA_TOKEN__ || '';
 const CONNECTED = !!(LEMMA_BASE && TOKEN && POD_ID);
 

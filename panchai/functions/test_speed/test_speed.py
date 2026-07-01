@@ -26,7 +26,7 @@ async def test_speed(ctx: FunctionContext, data: SpeedInput) -> SpeedOutput:
         conv = pod.conversations.create_for_agent(data.agent, title="speed test")
         conv_id = str(conv.to_dict()["id"])
         full = ""
-        async for event in pod.conversations.stream(conv_id, data.prompt):
+        async for event in pod.conversations.send_stream(conv_id, data.prompt):
             if event.get("type") == "text":
                 full += event.get("content", "")
         elapsed = time.time() - t0

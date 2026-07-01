@@ -1,6 +1,11 @@
 {
   "name": "goal_strip",
-  "description": "Separates task facts from user desired outcome for the Blind Tribunal Protocol. Deterministic, no LLM.",
+  "description": "Creates debate session, strips user goal from task, classifies stakes. Deterministic, no LLM.",
   "type": "API",
-  "code": {"$file": "goal_strip.py"}
+  "code": {"$file": "goal_strip.py"},
+  "permissions": {
+    "grants": [
+      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
+    ]
+  }
 }

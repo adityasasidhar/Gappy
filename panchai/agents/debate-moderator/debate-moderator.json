@@ -1,6 +1,6 @@
 {
   "name": "debate-moderator",
-  "description": "Moderates 3 rounds of structured blind debate between council agents, creating debate_messages records.",
+  "description": "Moderates live active-challenge debate by sending targeted prompts to separate council-agent conversations and persisting every response to debate_messages.",
   "instruction": { "$file": "instruction.md" },
   "toolsets": ["POD"],
   "visibility": "POD",
@@ -11,49 +11,24 @@
       "vote_breakdown": {
         "type": "object",
         "properties": {
-          "for": { "type": "array", "items": { "type": "string" }, "description": "Agent IDs who voted FOR" },
-          "against": { "type": "array", "items": { "type": "string" }, "description": "Agent IDs who voted AGAINST" },
-          "abstain": { "type": "array", "items": { "type": "string" }, "description": "Agent IDs who voted ABSTAIN" },
-          "reframe": { "type": "array", "items": { "type": "string" }, "description": "Agent IDs who voted REFRAME" }
+          "for": { "type": "array", "items": { "type": "string" } },
+          "against": { "type": "array", "items": { "type": "string" } },
+          "abstain": { "type": "array", "items": { "type": "string" } },
+          "reframe": { "type": "array", "items": { "type": "string" } }
         },
         "required": ["for", "against", "abstain", "reframe"]
       },
-      "reasoning_trail": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "round": { "type": "integer" },
-            "agent": { "type": "string" },
-            "position": { "type": "string" },
-            "confidence": { "type": "number" },
-            "argument_summary": { "type": "string" }
-          }
-        }
-      },
-      "final_positions": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "agent_id": { "type": "string" },
-            "position": { "type": "string", "enum": ["FOR", "AGAINST", "ABSTAIN", "REFRAME"] },
-            "confidence": { "type": "number" },
-            "argument": { "type": "string" }
-          }
-        }
-      }
+      "reasoning_trail": { "type": "array", "items": { "type": "object" } },
+      "final_positions": { "type": "array", "items": { "type": "object" } }
     },
     "required": ["session_id", "vote_breakdown", "reasoning_trail", "final_positions"]
   },
   "permissions": {
     "grants": [
-      { "resource_type": "function", "resource_name": "run_council", "permission_ids": ["function.read", "function.execute"] },
-      { "resource_type": "function", "resource_name": "batch_write", "permission_ids": ["function.read", "function.execute"] },
-      { "resource_type": "function", "resource_name": "write_db_record", "permission_ids": ["function.read", "function.execute"] },
-      { "resource_type": "function", "resource_name": "update_db_record", "permission_ids": ["function.read", "function.execute"] },
+      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
       { "resource_type": "datastore_table", "resource_name": "debate_rounds", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
-      { "resource_type": "datastore_table", "resource_name": "debate_messages", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
+      { "resource_type": "datastore_table", "resource_name": "debate_messages", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "pre_mortems", "permission_ids": ["datastore.table.read", "datastore.record.read"] }
     ]
   }
 }

@@ -1,6 +1,20 @@
 {
   "name": "fast_pipeline",
-  "description": "Runs the full deliberation pipeline via direct Ollama Cloud API. 3 parallel council agents, programmatic verdict. ~2-3s total.",
+  "description": "Runs the full deliberation pipeline via Lemma agents (create_for_agent + send_stream) with Ollama Cloud fallback. Selects council via registry_lookup, runs pre-mortem + debate (2 agents sequentially, R1-only for sandbox compliance), persists all records (pre_mortems, debate_rounds, debate_messages, verdicts, hitl_queue), archives to institutional memory. ~30-120s total.",
   "type": "API",
-  "code": {"$file": "fast_pipeline.py"}
+  "code": {"$file": "fast_pipeline.py"},
+  "permissions": {
+    "grants": [
+      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "debate_rounds", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "debate_messages", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "pre_mortems", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "verdicts", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "hitl_queue", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "function", "resource_name": "registry_lookup", "permission_ids": ["function.execute"] },
+      { "resource_type": "agent", "resource_name": "policy-analyst", "permission_ids": ["agent.execute", "agent.read"] },
+      { "resource_type": "agent", "resource_name": "customer-advocate", "permission_ids": ["agent.execute", "agent.read"] },
+      { "resource_type": "agent", "resource_name": "fraud-risk-assessor", "permission_ids": ["agent.execute", "agent.read"] }
+    ]
+  }
 }

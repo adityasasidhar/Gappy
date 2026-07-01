@@ -1,14 +1,26 @@
 {
   "name": "debate-pipeline",
-  "description": "PANCHAI fast deliberation pipeline: goal_strip -> direct Ollama API (3 agents parallel) -> verdict -> HITL check -> done. ~2-3s.",
+  "description": "PANCHAI fast deliberation: fill form -> auto-creates session -> 5-agent council (parallel) -> verdict -> done. ~3s.",
   "start": {
-    "type": "DATASTORE_EVENT",
-    "config": {
-      "table_name": "debate_sessions",
-      "operations": ["INSERT"]
-    }
+    "type": "MANUAL",
+    "config": null
   },
   "nodes": [
+    {
+      "id": "input_form",
+      "type": "FORM",
+      "label": "Enter Task",
+      "config": {
+        "input_schema": {
+          "type": "object",
+          "required": ["task_input"],
+          "properties": {
+            "task_input": { "type": "string", "title": "Task", "description": "The task or question to deliberate" },
+            "task_context": { "type": "string", "title": "Context (JSON)", "description": "Optional JSON context (e.g. customer info)" }
+          }
+        }
+      }
+    },
     {
       "id": "goal_stripper",
       "type": "FUNCTION",
@@ -16,10 +28,8 @@
       "config": {
         "function_name": "goal_strip",
         "input_mapping": {
-          "session_id": { "type": "expression", "value": "start.payload.record_id" },
-          "task_input": { "type": "expression", "value": "start.payload.task_input" },
-          "client_id": { "type": "expression", "value": "start.payload.client_id" },
-          "task_context": { "type": "expression", "value": "start.payload.task_context" }
+          "task_input": { "type": "expression", "value": "input_form.task_input" },
+          "task_context": { "type": "expression", "value": "input_form.task_context" }
         }
       }
     },
@@ -33,7 +43,7 @@
           "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
           "stripped_task": { "type": "expression", "value": "goal_stripper.stripped_task" },
           "user_goal": { "type": "expression", "value": "goal_stripper.user_goal" },
-          "client_id": { "type": "expression", "value": "start.payload.client_id" },
+          "client_id": { "type": "expression", "value": "goal_stripper.client_id" },
           "stakes_level": { "type": "expression", "value": "goal_stripper.stakes_level" },
           "council_size": { "type": "expression", "value": "goal_stripper.council_size" }
         }
@@ -83,6 +93,7 @@
     { "id": "done", "type": "END", "label": "Done" }
   ],
   "edges": [
+    { "id": "e0", "source": "input_form", "target": "goal_stripper" },
     { "id": "e1", "source": "goal_stripper", "target": "deliberation" },
     { "id": "e2", "source": "deliberation", "target": "check_hitl" },
     { "id": "e3", "source": "check_hitl", "target": "done" },

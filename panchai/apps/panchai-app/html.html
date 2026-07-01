@@ -3,45 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PANCHAI — Deliberation Engine</title>
+  <title>PANCHAI — Multi-Agent Deliberation Engine</title>
+  
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <!-- Icons & SDK -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
   <script src="https://api.lemma.work/public/sdk/lemma-client.js"></script>
-    <style>
-    /* ── Premium Design Tokens ── */
+  
+  <style>
+    /* ─── Premium Design Tokens (Refined Anthracite & Slate Palette) ─── */
     :root {
-      --bg: #09090b;
-      --bg-gradient: radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08), transparent 50%), radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.05), transparent 50%);
-      --bg2: rgba(24, 24, 27, 0.6);
-      --surface: rgba(39, 39, 42, 0.65);
-      --surface-hover: rgba(63, 63, 70, 0.8);
-      --border: rgba(255, 255, 255, 0.08);
-      --border2: rgba(255, 255, 255, 0.15);
+      --bg: #0b0c10;
+      --bg-gradient: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05), transparent 45%), 
+                     radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04), transparent 40%),
+                     radial-gradient(circle at 50% 50%, rgba(24, 24, 27, 0.3), transparent 100%);
+      --bg-card: rgba(18, 18, 24, 0.7);
+      --bg-surface: rgba(30, 30, 38, 0.4);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
       --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.3);
       --accent-hover: #4f46e5;
-      --accent-muted: rgba(99, 102, 241, 0.2);
-      --for-color: #10b981;
-      --for-bg: rgba(16, 185, 129, 0.15);
-      --against-color: #f43f5e;
-      --against-bg: rgba(244, 63, 94, 0.15);
-      --reframe-color: #3b82f6;
-      --reframe-bg: rgba(59, 130, 246, 0.15);
-      --abstain-color: #94a3b8;
-      --abstain-bg: rgba(148, 163, 184, 0.15);
-      --warning-color: #f59e0b;
-      --warning-bg: rgba(245, 158, 11, 0.15);
+      
+      /* Semantic Status Colors */
+      --consensus: #10b981;
+      --consensus-bg: rgba(16, 185, 129, 0.1);
+      --risk: #f43f5e;
+      --risk-bg: rgba(244, 63, 94, 0.1);
+      --reframe: #3b82f6;
+      --reframe-bg: rgba(59, 130, 246, 0.1);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.1);
+      
       --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --radius: 16px;
-      --radius-sm: 10px;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-display: 'Outfit', sans-serif;
-      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-      --glass-blur: blur(12px);
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.7);
+      --glass-blur: blur(20px);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
     body {
       font-family: var(--font-sans);
       background-color: var(--bg);
@@ -55,312 +74,1343 @@
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }
+    
+    /* ─── Layout: Header ─── */
     header {
-      height: 72px;
+      height: 80px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 32px;
-      background: rgba(9, 9, 11, 0.7);
+      padding: 0 40px;
+      background: rgba(11, 12, 16, 0.75);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
-      z-index: 10;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
     }
+    
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
       font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 24px;
-      letter-spacing: 1px;
-      background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+      font-weight: 800;
+      font-size: 26px;
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .brand svg { 
-      color: var(--accent); 
+    
+    .brand svg {
+      color: var(--accent);
       -webkit-text-fill-color: initial;
-      filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.4));
+      filter: drop-shadow(0 0 10px var(--accent-glow));
     }
-    .header-controls { display: flex; gap: 16px; align-items: center; }
-    select.session-select {
-      background: rgba(39, 39, 42, 0.5);
-      backdrop-filter: blur(8px);
-      color: var(--text);
+    
+    .header-controls {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    
+    .session-selector-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(30, 30, 38, 0.6);
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      padding: 6px 14px;
+    }
+    
+    .session-selector-container span {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    select.session-select {
+      background: transparent;
+      color: var(--text);
+      border: none;
       font-family: var(--font-sans);
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       outline: none;
-      min-width: 240px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 260px;
       cursor: pointer;
     }
-    select.session-select:focus, select.session-select:hover { 
-      border-color: var(--accent); 
-      background: rgba(39, 39, 42, 0.8);
-      box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+    
+    .btn-action {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
     }
-    .main-container { display: flex; flex: 1; overflow: hidden; }
+    
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding: 6px 14px;
+      border-radius: 50px;
+      background: rgba(30, 30, 38, 0.5);
+      border: 1px solid var(--border);
+    }
+    
+    .status-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 10px var(--warning);
+    }
+    
+    .status-badge-dot.connected {
+      background: var(--consensus);
+      box-shadow: 0 0 10px var(--consensus);
+    }
+    
+    /* ─── Layout: Main ─── */
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    /* ─── Sidebar ─── */
     .sidebar {
-      width: 340px;
-      background: rgba(24, 24, 27, 0.4);
+      width: 360px;
+      background: rgba(14, 15, 20, 0.7);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
-      box-shadow: var(--glass-shadow);
-      z-index: 5;
+      box-shadow: var(--shadow-premium);
+      z-index: 50;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .content-area { flex: 1; display: flex; flex-direction: column; position: relative; }
+    
+    .sidebar-section {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .sidebar-title {
+      font-family: var(--font-display);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .task-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .meta-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .meta-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .badge.high-stakes {
+      background: var(--risk-bg);
+      color: #fda4af;
+      border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+    
+    .badge.standard-stakes {
+      background: var(--reframe-bg);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: rgba(30, 30, 38, 0.4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+    
+    .status-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      animation: pulse 2s infinite;
+    }
+    
+    .status-dot.done {
+      background: var(--consensus);
+      box-shadow: 0 0 12px var(--consensus);
+    }
+    
+    .status-dot.hitl {
+      background: var(--warning);
+      box-shadow: 0 0 12px var(--warning);
+      animation: pulse-warning 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+    
+    @keyframes pulse-warning {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+    
+    /* ─── Sidebar Pipeline Stepper ─── */
+    .architecture-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+    
+    .arch-step {
+      display: flex;
+      gap: 16px;
+      position: relative;
+      opacity: 0.3;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    
+    .arch-step:hover {
+      opacity: 0.7;
+    }
+    
+    .arch-step.active {
+      opacity: 1;
+    }
+    
+    .arch-step.completed {
+      opacity: 0.8;
+    }
+    
+    .arch-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      margin-top: 6px;
+      position: relative;
+      z-index: 2;
+      border: 3px solid #0e0f14;
+      transition: all 0.3s ease;
+    }
+    
+    .arch-step.active .arch-dot {
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      transform: scale(1.3);
+    }
+    
+    .arch-step.completed .arch-dot {
+      background: var(--consensus);
+      box-shadow: 0 0 8px var(--consensus);
+    }
+    
+    .arch-line {
+      position: absolute;
+      left: 5px;
+      top: 18px;
+      bottom: -22px;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
+    
+    .arch-step:last-child .arch-line {
+      display: none;
+    }
+    
+    .arch-step.completed .arch-line {
+      background: var(--consensus);
+    }
+    
+    .arch-step.active .arch-line {
+      background: linear-gradient(to bottom, var(--accent), rgba(255, 255, 255, 0.05));
+    }
+    
+    .arch-content h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+      font-family: var(--font-display);
+    }
+    
+    .arch-step.active .arch-content h4 {
+      color: var(--accent);
+    }
+    
+    .arch-step.completed .arch-content h4 {
+      color: var(--consensus);
+    }
+    
+    .arch-content p {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    
+    .tech-badge {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: var(--font-mono);
+    }
+    
+    .arch-step.completed .tech-badge {
+      color: var(--consensus);
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    
+    /* ─── Content Area ─── */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: rgba(11, 12, 16, 0.4);
+    }
+    
+    /* Tabs Navigation */
     .tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
-      padding: 0 32px;
-      background: rgba(9, 9, 11, 0.5);
+      padding: 0 40px;
+      background: rgba(14, 15, 20, 0.6);
       backdrop-filter: blur(10px);
-      z-index: 4;
+      z-index: 40;
     }
+    
     .tab {
-      padding: 20px 24px;
+      padding: 22px 24px;
       color: var(--text-muted);
       cursor: pointer;
-      font-weight: 500;
+      font-weight: 600;
       font-family: var(--font-display);
+      font-size: 15px;
       border-bottom: 3px solid transparent;
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 15px;
       letter-spacing: 0.5px;
     }
-    .tab:hover { color: var(--text); background: rgba(255, 255, 255, 0.02); }
+    
+    .tab:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    
     .tab.active {
       color: var(--accent);
       border-bottom-color: var(--accent);
-      background: linear-gradient(to top, rgba(99, 102, 241, 0.1), transparent);
+      background: linear-gradient(to top, rgba(99, 102, 241, 0.06), transparent);
     }
-    .view { display: none; flex: 1; overflow-y: auto; padding: 40px; }
-    .view.active { display: block; animation: viewFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
+    /* Views */
+    .view {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px;
+    }
+    
+    .view.active {
+      display: block;
+      animation: viewFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
     @keyframes viewFadeIn {
-      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ─── View 0: Architecture Tour ─── */
+    .tour-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .tour-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .tour-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.1);
+    }
+    
+    .tour-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--text-muted);
+    }
+    
+    .tour-card.active-tour::before {
+      background: var(--accent);
+      box-shadow: 0 0 15px var(--accent);
+    }
+    
+    .tour-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .tour-phase-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+    }
+    
+    .tour-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .tour-title svg {
+      color: var(--accent);
+    }
+    
+    .tour-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    
+    .tour-solve {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      font-size: 13px;
+    }
+    
+    .tour-solve-label {
+      font-weight: 700;
+      color: var(--consensus);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .tour-interactive-demo {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      margin-top: auto;
+    }
+    
+    /* ─── View 1: Live Feed ─── */
+    .feed-container {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding-bottom: 120px;
+    }
+    
+    .round-divider {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin: 30px 0 10px;
+      color: var(--text-muted);
+      font-family: var(--font-display);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      font-size: 12px;
+    }
+    
+    .round-divider::before, .round-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+    }
+    
+    .message-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      animation: messageSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    .message-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      border-color: var(--border-hover);
+    }
+    
+    @keyframes messageSlideIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.99); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
-    .sidebar-section { padding: 28px; border-bottom: 1px solid var(--border); }
-    .sidebar-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 16px; font-weight: 700; }
-    .task-meta { display: flex; flex-direction: column; gap: 20px; }
-    .meta-item { display: flex; flex-direction: column; gap: 6px; }
-    .meta-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-    .meta-value { font-size: 14px; font-weight: 500; color: #f1f5f9; line-height: 1.6; }
-    .badge {
-      display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 24px;
-      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-      backdrop-filter: blur(4px);
+    
+    .message-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
     }
-    .badge.high-stakes { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); box-shadow: 0 0 10px rgba(244, 63, 94, 0.1); }
-    .badge.standard-stakes { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); box-shadow: 0 0 10px rgba(59, 130, 246, 0.1); }
-    .status-indicator {
-      display: flex; align-items: center; gap: 12px; padding: 14px 18px;
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-      font-weight: 500; margin-top: 24px; box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    
+    .pos-FOR::before { background: var(--consensus); box-shadow: 0 0 10px var(--consensus); }
+    .pos-AGAINST::before { background: var(--risk); box-shadow: 0 0 10px var(--risk); }
+    .pos-REFRAME::before { background: var(--reframe); box-shadow: 0 0 10px var(--reframe); }
+    .pos-ABSTAIN::before { background: var(--text-muted); }
+    .pos-PREMORTEM::before { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
+    .pos-MODERATOR::before { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+    
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
     }
-    .status-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .status-dot.active { background: var(--accent); box-shadow: 0 0 12px var(--accent); animation: pulse 2s infinite; }
-    .status-dot.done { background: var(--for-color); box-shadow: 0 0 12px var(--for-color); }
-    .status-dot.hitl { background: var(--warning-color); box-shadow: 0 0 12px var(--warning-color); animation: pulse-warning 2s infinite; }
-    @keyframes pulse {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    
+    .agent-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
-    @keyframes pulse-warning {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-    }
-    .feed-container { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; padding-bottom: 120px; }
-    .round-divider {
-      display: flex; align-items: center; gap: 20px; margin: 24px 0;
-      color: var(--text-muted); font-family: var(--font-display); font-weight: 600;
-      text-transform: uppercase; letter-spacing: 2px; font-size: 13px;
-    }
-    .round-divider::before, .round-divider::after { content: ""; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--border2), transparent); }
-    .message-card {
-      background: rgba(39, 39, 42, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; position: relative; overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); animation: messageSlideIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-    .message-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); border-color: var(--border2); background: rgba(39, 39, 42, 0.6); }
-    @keyframes messageSlideIn { from { opacity: 0; transform: translateX(30px) scale(0.98); } to { opacity: 1; transform: translateX(0) scale(1); } }
-    .message-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 4px 0 0 4px; }
-    .pos-FOR::before { background: var(--for-color); box-shadow: 0 0 10px var(--for-color); }
-    .pos-AGAINST::before { background: var(--against-color); box-shadow: 0 0 10px var(--against-color); }
-    .pos-REFRAME::before { background: var(--reframe-color); box-shadow: 0 0 10px var(--reframe-color); }
-    .pos-ABSTAIN::before { background: var(--abstain-color); box-shadow: 0 0 10px var(--abstain-color); }
-    .pos-PREMORTEM::before { background: var(--warning-color); box-shadow: 0 0 10px var(--warning-color); }
-    .message-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-    .agent-info { display: flex; align-items: center; gap: 14px; }
+    
     .agent-avatar {
-      width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, rgba(63,63,70,1) 0%, rgba(39,39,42,1) 100%);
-      display: flex; align-items: center; justify-content: center; border: 1px solid var(--border2); box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
     }
-    .agent-avatar svg { width: 20px; height: 20px; color: #e2e8f0; }
-    .agent-details { display: flex; flex-direction: column; gap: 2px; }
-    .agent-name { font-weight: 600; font-family: var(--font-display); font-size: 16px; letter-spacing: 0.3px; }
-    .agent-bias { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-    .position-badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .pos-FOR .position-badge { background: var(--for-bg); color: var(--for-color); border: 1px solid rgba(16,185,129,0.2); }
-    .pos-AGAINST .position-badge { background: var(--against-bg); color: var(--against-color); border: 1px solid rgba(244,63,94,0.2); }
-    .pos-REFRAME .position-badge { background: var(--reframe-bg); color: var(--reframe-color); border: 1px solid rgba(59,130,246,0.2); }
-    .pos-PREMORTEM .position-badge { background: var(--warning-bg); color: var(--warning-color); border: 1px solid rgba(245,158,11,0.2); }
-    .message-body { color: #cbd5e1; font-size: 15px; line-height: 1.7; white-space: pre-wrap; padding-left: 54px; }
-    .dashboard-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; max-width: 1200px; margin: 0 auto; }
+    
+    .agent-avatar svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text-secondary);
+    }
+    
+    .agent-details {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .agent-name {
+      font-weight: 600;
+      font-family: var(--font-display);
+      font-size: 15px;
+      color: var(--text);
+    }
+    
+    .agent-bias {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-top: 1px;
+    }
+    
+    .position-badge {
+      padding: 6px 12px;
+      border-radius: 50px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+    }
+    
+    .pos-FOR .position-badge { background: var(--consensus-bg); color: var(--consensus); border: 1px solid rgba(16, 185, 129, 0.15); }
+    .pos-AGAINST .position-badge { background: var(--risk-bg); color: var(--risk); border: 1px solid rgba(244, 63, 94, 0.15); }
+    .pos-REFRAME .position-badge { background: var(--reframe-bg); color: var(--reframe); border: 1px solid rgba(59, 130, 246, 0.15); }
+    .pos-PREMORTEM .position-badge { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.15); }
+    .pos-MODERATOR .position-badge { background: rgba(99, 102, 241, 0.1); color: var(--accent); border: 1px solid rgba(99, 102, 241, 0.15); }
+    
+    .message-body {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      padding-left: 54px;
+    }
+    
+    /* ─── View 2: Verdict Dashboard ─── */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
     .card {
-      background: rgba(39, 39, 42, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-premium);
     }
-    .card:hover { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); }
-    .card-title { font-family: var(--font-display); font-weight: 600; font-size: 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; color: #f8fafc; }
-    .card-title svg { color: var(--accent); filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.5)); }
+    
+    .card-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .card-title svg {
+      color: var(--accent);
+      filter: drop-shadow(0 0 5px var(--accent-glow));
+    }
+    
     .outcome-card {
-      grid-column: span 12; background: linear-gradient(135deg, rgba(39,39,42,0.7) 0%, rgba(24,24,27,0.8) 100%);
-      border: 1px solid rgba(255,255,255,0.1); text-align: center; padding: 40px; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; position: relative; overflow: hidden;
+      grid-column: span 12;
+      background: linear-gradient(135deg, rgba(20, 20, 28, 0.8) 0%, rgba(10, 10, 15, 0.9) 100%);
+      text-align: center;
+      padding: 48px;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
     }
+    
     .outcome-card::after {
-      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 50%); animation: rotateBg 20s linear infinite;
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.02) 0%, transparent 60%);
+      pointer-events: none;
     }
-    @keyframes rotateBg { 100% { transform: rotate(360deg); } }
-    .verdict-large { font-family: var(--font-display); font-size: 48px; font-weight: 800; letter-spacing: 4px; margin-bottom: 12px; z-index: 1; }
-    .v-APPROVED { color: var(--for-color); text-shadow: 0 0 30px rgba(16,185,129,0.4); }
-    .v-REJECTED { color: var(--against-color); text-shadow: 0 0 30px rgba(244,63,94,0.4); }
-    .v-ESCALATED { color: var(--warning-color); text-shadow: 0 0 30px rgba(245,158,11,0.4); }
-    .v-REFRAMED { color: var(--reframe-color); text-shadow: 0 0 30px rgba(59,130,246,0.4); }
-    #vd-reason { z-index: 1; font-size: 16px; line-height: 1.6; }
-    .confidence-gauge { grid-column: span 4; align-items: center; }
+    
+    .verdict-large {
+      font-family: var(--font-display);
+      font-size: 54px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      margin-bottom: 16px;
+      z-index: 1;
+    }
+    
+    .v-APPROVED { color: var(--consensus); text-shadow: 0 0 40px rgba(16,185,129,0.3); }
+    .v-REJECTED { color: var(--risk); text-shadow: 0 0 40px rgba(244,63,94,0.3); }
+    .v-ESCALATED { color: var(--warning); text-shadow: 0 0 40px rgba(245,158,11,0.3); }
+    .v-REFRAMED { color: var(--reframe); text-shadow: 0 0 40px rgba(59,130,246,0.3); }
+    
+    #vd-reason {
+      z-index: 1;
+      font-size: 15px;
+      line-height: 1.6;
+      max-width: 680px;
+      color: var(--text-secondary);
+    }
+    
+    .confidence-gauge {
+      grid-column: span 4;
+      align-items: center;
+    }
+    
     .gauge-circle {
-      position: relative; width: 140px; height: 140px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-size: 32px; font-weight: 700; font-family: var(--font-display); margin: 10px 0; background: rgba(0,0,0,0.2); box-shadow: inset 0 4px 10px rgba(0,0,0,0.3);
+      position: relative;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      font-weight: 700;
+      font-family: var(--font-display);
+      margin: 16px 0;
+      background: rgba(0,0,0,0.3);
+      box-shadow: inset 0 4px 12px rgba(0,0,0,0.5);
     }
-    .gauge-svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); filter: drop-shadow(0 0 6px rgba(0,0,0,0.5)); }
-    .gauge-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 10; }
-    .gauge-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dasharray 1.5s cubic-bezier(0.2,0.8,0.2,1); }
-    .vote-breakdown { grid-column: span 8; }
-    .vote-bar-container { display: flex; height: 28px; border-radius: 14px; overflow: hidden; margin-bottom: 20px; background: rgba(0,0,0,0.3); box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); }
-    .vote-segment { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.9); transition: width 0.8s cubic-bezier(0.2,0.8,0.2,1); text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
-    .seg-for { background: linear-gradient(90deg, #059669, #10b981); }
-    .seg-against { background: linear-gradient(90deg, #e11d48, #f43f5e); }
-    .agent-vote-list { display: flex; flex-direction: column; gap: 12px; }
-    .agent-vote-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: rgba(255,255,255,0.03); border-radius: var(--radius-sm); border: 1px solid var(--border); transition: background 0.2s; }
-    .agent-vote-row:hover { background: rgba(255,255,255,0.06); }
-    .conflict-report { grid-column: span 12; }
-    .conflict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .conflict-box { padding: 24px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); border: 1px solid var(--border); box-shadow: inset 0 2px 10px rgba(0,0,0,0.1); }
-    .conflict-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 1px; }
-    .divergence-alert { margin-top: 20px; padding: 16px 20px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 14px; font-weight: 600; font-size: 15px; }
-    .div-high { background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.3); color: #fda4af; box-shadow: 0 0 20px rgba(244, 63, 94, 0.1); }
-    .div-low { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
+    
+    .gauge-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: rotate(-90deg);
+    }
+    
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.03);
+      stroke-width: 8;
+    }
+    
+    .gauge-fill {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dasharray 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .vote-breakdown {
+      grid-column: span 8;
+    }
+    
+    .vote-bar-container {
+      display: flex;
+      height: 24px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+    }
+    
+    .vote-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: white;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      letter-spacing: 0.5px;
+    }
+    
+    .seg-for { background: linear-gradient(90deg, #059669, var(--consensus)); }
+    .seg-against { background: linear-gradient(90deg, #e11d48, var(--risk)); }
+    
+    .agent-vote-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .agent-vote-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+    
+    .conflict-report {
+      grid-column: span 12;
+    }
+    
+    .conflict-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .conflict-box {
+      padding: 24px;
+      background: rgba(0,0,0,0.2);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+    
+    .conflict-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    
+    .divergence-alert {
+      margin-top: 24px;
+      padding: 18px 24px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    
+    .div-high {
+      background: rgba(244, 63, 94, 0.08);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+      color: #fda4af;
+    }
+    
+    .div-low {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      color: #a7f3d0;
+    }
+    
+    /* HITL Panel */
     #hitl-form-container {
-      display: none; grid-column: span 12; background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius); padding: 40px; box-shadow: 0 10px 40px rgba(245, 158, 11, 0.1); position: relative; overflow: hidden;
+      display: none;
+      grid-column: span 12;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.01) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      box-shadow: 0 10px 40px rgba(245, 158, 11, 0.05);
+      position: relative;
     }
-    #hitl-form-container::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--warning-color); }
-    .hitl-header { display: flex; align-items: center; gap: 14px; color: var(--warning-color); margin-bottom: 24px; }
-    .hitl-options { display: flex; gap: 20px; margin-bottom: 24px; }
-    .hitl-option { flex: 1; position: relative; }
-    .hitl-option input[type="radio"] { display: none; }
+    
+    #hitl-form-container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--warning);
+    }
+    
+    .hitl-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--warning);
+      margin-bottom: 20px;
+    }
+    
+    .hitl-options {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .hitl-option {
+      flex: 1;
+    }
+    
+    .hitl-option input[type="radio"] {
+      display: none;
+    }
+    
     .hitl-option label {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; background: rgba(39, 39, 42, 0.6);
-      border: 2px solid var(--border2); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); font-weight: 600; font-size: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      background: rgba(30, 30, 38, 0.4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-secondary);
     }
-    .hitl-option label:hover { background: rgba(63, 63, 70, 0.6); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
-    .hitl-option input[type="radio"]:checked + label { border-color: var(--accent); background: rgba(99, 102, 241, 0.15); color: white; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2); }
+    
+    .hitl-option label:hover {
+      background: rgba(30, 30, 38, 0.7);
+      border-color: var(--border-hover);
+    }
+    
+    .hitl-option input[type="radio"]:checked + label {
+      border-color: var(--accent);
+      background: rgba(99, 102, 241, 0.12);
+      color: white;
+    }
+    
     textarea.hitl-reason {
-      width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); padding: 20px; font-family: var(--font-sans);
-      font-size: 15px; min-height: 120px; resize: vertical; margin-bottom: 24px; outline: none; transition: all 0.3s ease; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
-    }
-    textarea.hitl-reason:focus { border-color: var(--accent); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2), 0 0 0 3px rgba(99,102,241,0.2); }
-    button.btn-primary {
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%); color: white; border: none; padding: 14px 32px; border-radius: var(--radius-sm); font-weight: 700;
-      font-size: 16px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-    }
-    button.btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6); }
-    button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; background: var(--surface-hover); box-shadow: none; }
-    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 300px; color: var(--text-muted); text-align: center; animation: fadeIn 0.5s ease; }
-    .empty-state svg { margin-bottom: 20px; opacity: 0.4; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2)); }
-    .empty-state h3 { font-family: var(--font-display); color: var(--text); margin-bottom: 12px; font-size: 22px; font-weight: 700; }
-    .empty-state p { font-size: 15px; max-width: 300px; margin: 0 auto; line-height: 1.6; }
-    .btn-new-session {
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-      color: white; border: none; padding: 10px 18px; border-radius: var(--radius-sm);
-      font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex;
-      align-items: center; gap: 8px; transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text);
+      padding: 16px;
       font-family: var(--font-sans);
-    }
-    .btn-new-session:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-    }
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 100;
-      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
-      align-items: center; justify-content: center;
-    }
-    .modal-overlay.show { display: flex; }
-    .modal {
-      background: rgba(24, 24, 27, 0.95); border: 1px solid var(--border2);
-      border-radius: var(--radius); padding: 36px; width: 100%; max-width: 560px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      max-height: 90vh; overflow-y: auto;
-    }
-    @keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .modal-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
-    .modal-header h2 { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
-    .modal-header svg { color: var(--accent); }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-group input, .form-group textarea {
-      width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text); padding: 14px 16px;
-      font-family: var(--font-sans); font-size: 15px; outline: none;
+      font-size: 14px;
+      min-height: 110px;
+      resize: vertical;
+      margin-bottom: 24px;
+      outline: none;
       transition: all 0.3s ease;
     }
-    .form-group textarea { min-height: 120px; resize: vertical; }
+    
+    textarea.hitl-reason:focus {
+      border-color: var(--accent);
+    }
+    
+    /* ─── View 4: Impact Dashboard ─── */
+    .metrics-dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .metric-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-hover);
+    }
+    
+    .metric-value {
+      font-family: var(--font-display);
+      font-size: 44px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+    
+    .metric-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .metric-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    .metric-value.green { color: var(--consensus); }
+    .metric-value.red { color: var(--risk); }
+    .metric-value.blue { color: var(--reframe); }
+    .metric-value.gold { color: var(--warning); }
+    
+    /* Empty State & Hero */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 340px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    
+    .empty-state svg {
+      margin-bottom: 24px;
+      opacity: 0.4;
+      color: var(--text-muted);
+    }
+    
+    .empty-state h3 {
+      font-family: var(--font-display);
+      color: var(--text);
+      margin-bottom: 12px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    
+    .empty-state p {
+      font-size: 14px;
+      max-width: 360px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    
+    .hero-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100%;
+      padding: 60px 40px;
+      text-align: center;
+    }
+    
+    .hero-icon {
+      width: 72px;
+      height: 72px;
+      color: var(--accent);
+      filter: drop-shadow(0 0 20px var(--accent-glow));
+      margin-bottom: 28px;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .hero-section h1 {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 5vw, 54px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+      line-height: 1.15;
+    }
+    
+    .hero-tagline {
+      font-size: clamp(16px, 2vw, 19px);
+      color: var(--text-secondary);
+      max-width: 640px;
+      line-height: 1.7;
+      margin-bottom: 48px;
+    }
+    
+    .hero-demos-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    
+    .hero-demos {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .demo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      width: 320px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-premium);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .demo-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.15);
+    }
+    
+    .demo-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    
+    .demo-card h3 {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    
+    .demo-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    
+    .demo-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      background: rgba(99, 102, 241, 0.05);
+      transition: all 0.2s;
+      cursor: pointer;
+      margin-top: auto;
+      align-self: flex-start;
+    }
+    
+    .demo-card:hover .demo-btn {
+      background: var(--accent);
+      color: white;
+    }
+    
+    /* ─── Modals ─── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal {
+      background: rgba(18, 18, 24, 0.95);
+      border: 1px solid var(--border-hover);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.8);
+      animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    
+    .modal-header h2 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+    }
+    
+    .modal-header svg {
+      color: var(--accent);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .form-group input, .form-group textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text);
+      padding: 14px 16px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
     .form-group input:focus, .form-group textarea:focus {
-      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
-    .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
-    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 28px; }
+    
+    .form-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: flex-end;
+      margin-top: 28px;
+    }
+    
     .btn-secondary {
-      background: rgba(39, 39, 42, 0.6); color: var(--text); border: 1px solid var(--border);
-      padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px;
-      cursor: pointer; transition: all 0.3s ease; font-family: var(--font-sans);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .btn-secondary:hover { background: rgba(63, 63, 70, 0.8); border-color: var(--border2); }
-    @media (max-width: 1024px) {
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border-hover);
+    }
+    
+    @media (max-width: 1000px) {
+      .sidebar { width: 300px; }
+      .view { padding: 24px; }
+    }
+    
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
       .dashboard-grid { grid-template-columns: 1fr; }
-      .confidence-gauge, .vote-breakdown, .conflict-report { grid-column: span 1 !important; }
-    }
-    @media (max-width: 768px) {
-      .main-container { flex-direction: column; }
-      .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
-      .header-controls { flex-wrap: wrap; gap: 8px; }
-      .view { padding: 20px; }
-      .dashboard-grid { gap: 16px; }
+      .confidence-gauge, .vote-breakdown, .conflict-report, .outcome-card, #hitl-form-container { grid-column: span 12 !important; }
+      .conflict-grid { grid-template-columns: 1fr; }
+      .hitl-options { flex-direction: column; }
     }
   </style>
 </head>
@@ -373,21 +1423,27 @@
       PANCHAI
     </div>
     <div class="header-controls">
-      <span style="font-size: 13px; color: var(--text-muted);">Active Session:</span>
-      <select id="session-select" class="session-select">
-        <option value="">Loading sessions...</option>
-      </select>
-      <button id="new-session-btn" class="btn-new-session">
+      <div class="session-selector-container">
+        <span>Session:</span>
+        <select id="session-select" class="session-select">
+          <option value="">-- Select a Session --</option>
+        </select>
+      </div>
+      <button id="new-session-btn" class="btn-action">
         <i data-lucide="plus"></i> New Session
       </button>
+      <span id="connection-badge" class="status-badge">
+        <span id="conn-dot" class="status-badge-dot"></span>
+        <span id="conn-text">Connecting...</span>
+      </span>
     </div>
   </header>
 
   <div class="main-container">
-    <!-- Sidebar: Context -->
+    <!-- Sidebar: Context & Live Pipeline Stepper -->
     <aside class="sidebar">
       <div class="sidebar-section">
-        <h3 class="sidebar-title">Task Context</h3>
+        <h3 class="sidebar-title"><i data-lucide="info" style="width: 14px; height: 14px;"></i> Task Context</h3>
         <div id="sidebar-content" class="task-meta">
           <div class="meta-item">
             <span class="meta-label">Client</span>
@@ -411,57 +1467,262 @@
           <span id="meta-status-text">Waiting for session...</span>
         </div>
       </div>
+
+      <!-- Pipeline Architecture Stepper -->
+      <div class="sidebar-section">
+        <h3 class="sidebar-title"><i data-lucide="workflow" style="width: 14px; height: 14px;"></i> Deliberation Pipeline</h3>
+        <div class="architecture-steps">
+          <div class="arch-step" id="arch-step-0" onclick="showTourStep(0)">
+            <div class="arch-line"></div>
+            <div class="arch-dot"></div>
+            <div class="arch-content">
+              <h4>Phase 0: Goal Stripping</h4>
+              <p>Extracts raw facts from biased user outcomes.</p>
+              <span class="tech-badge">Lemma Function</span>
+            </div>
+          </div>
+          <div class="arch-step" id="arch-step-1" onclick="showTourStep(1)">
+            <div class="arch-line"></div>
+            <div class="arch-dot"></div>
+            <div class="arch-content">
+              <h4>Phase 1: Pre-Mortem Forcing</h4>
+              <p>Agents independently project failure modes before debating.</p>
+              <span class="tech-badge">Lemma Conversations</span>
+            </div>
+          </div>
+          <div class="arch-step" id="arch-step-2" onclick="showTourStep(2)">
+            <div class="arch-line"></div>
+            <div class="arch-dot"></div>
+            <div class="arch-content">
+              <h4>Phase 2: Registry & Precedent</h4>
+              <p>RAG extracts capability cards and historical archives.</p>
+              <span class="tech-badge">Files API Hybrid Search</span>
+            </div>
+          </div>
+          <div class="arch-step" id="arch-step-3" onclick="showTourStep(3)">
+            <div class="arch-line"></div>
+            <div class="arch-dot"></div>
+            <div class="arch-content">
+              <h4>Phase 3: Active Debate</h4>
+              <p>Moderator drives challenges over max 3 rounds.</p>
+              <span class="tech-badge">Active Moderator Agent</span>
+            </div>
+          </div>
+          <div class="arch-step" id="arch-step-4" onclick="showTourStep(4)">
+            <div class="arch-line"></div>
+            <div class="arch-dot"></div>
+            <div class="arch-content">
+              <h4>Phase 4: Verdict Synthesis</h4>
+              <p>Brain determines consensus and structured JSON verdict.</p>
+              <span class="tech-badge">Lemma Datastore Table</span>
+            </div>
+          </div>
+          <div class="arch-step" id="arch-step-5" onclick="showTourStep(5)">
+            <div class="arch-dot"></div>
+            <div class="arch-content">
+              <h4>Phase 5: HITL & Federated Silo</h4>
+              <p>Checks 5-rule escalation matrix and logs to File RAG.</p>
+              <span class="tech-badge">Workflow wait_node + Files API</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </aside>
 
     <!-- Main Content Area -->
     <main class="content-area">
       <!-- Tabs -->
       <div class="tabs">
-        <div class="tab active" data-target="view-feed">
-          <i data-lucide="activity" class="icon"></i> Live Debate Feed
+        <div class="tab active" data-target="view-architecture">
+          <i data-lucide="network"></i> Pipeline Tour
         </div>
-        <div class="tab" data-target="view-verdict">
-          <i data-lucide="file-check" class="icon"></i> Verdict Dashboard
+        <div class="tab" data-target="view-feed" id="tab-feed">
+          <i data-lucide="activity"></i> Deliberation Feed
+        </div>
+        <div class="tab" data-target="view-verdict" id="tab-verdict">
+          <i data-lucide="file-check"></i> Verdict Dashboard
+        </div>
+        <div class="tab" data-target="view-metrics">
+          <i data-lucide="bar-chart-3"></i> System Impact
         </div>
       </div>
 
-      <!-- View: Live Feed -->
-      <div id="view-feed" class="view active">
+      <!-- View 0: Interactive Pipeline Tour -->
+      <div id="view-architecture" class="view active">
+        <div style="max-width: 1200px; margin: 0 auto; margin-bottom: 32px;">
+          <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 8px;">Interactive Deliberation Pipeline Tour</h2>
+          <p style="color: var(--text-secondary); font-size: 15px;">Click any phase below or in the sidebar stepper to inspect PANCHAI's core anti-sycophancy mechanisms.</p>
+        </div>
+        <div class="tour-grid">
+          
+          <!-- Phase 0 -->
+          <div class="tour-card" id="tour-card-0">
+            <div class="tour-header">
+              <span class="tour-phase-num">PHASE 0</span>
+              <i data-lucide="scale"></i>
+            </div>
+            <h3 class="tour-title">Goal Stripping</h3>
+            <p class="tour-desc">Every AI is trained to validate user premises. PANCHAI intercepts incoming goals and splits the biased desired outcome from the raw physical constraints and facts.</p>
+            <div class="tour-solve">
+              <div class="tour-solve-label"><i data-lucide="check-circle-2"></i> Anti-Sycophancy Anchor</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">Agents literally cannot tell you what you want to hear because the stripping protocol obscures your preferred outcome from them.</p>
+            </div>
+            <div class="tour-interactive-demo">
+              <span style="color: var(--accent); font-weight: 700; font-size: 10px; display: block; margin-bottom: 4px;">INPUT/OUTPUT COMPARISON</span>
+              <span style="color: var(--risk); font-weight: 600;">Goal:</span> "Validate launching this app in 2 days."<br/>
+              <span style="color: var(--consensus); font-weight: 600;">Stripped:</span> "Evaluate readiness. Specs: 12 features, 2 test files, 1 developer."
+            </div>
+          </div>
+          
+          <!-- Phase 1 -->
+          <div class="tour-card" id="tour-card-1">
+            <div class="tour-header">
+              <span class="tour-phase-num">PHASE 1</span>
+              <i data-lucide="alert-octagon"></i>
+            </div>
+            <h3 class="tour-title">Pre-Mortem Forcing</h3>
+            <p class="tour-desc">Before voting, agents operate in isolated passive mode. Each agent must submit a mandatory failure analysis questionnaire before they are allowed to see others or argue.</p>
+            <div class="tour-solve">
+              <div class="tour-solve-label"><i data-lucide="shield-alert"></i> Destroys Anchoring Bias</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">Empirically proven to prevent groupthink. Agents must commit to writing what will fail before defending their reasoning bias.</p>
+            </div>
+            <div class="tour-interactive-demo">
+              <span style="color: var(--warning); font-weight: 700; font-size: 10px; display: block; margin-bottom: 4px;">MANDATORY AGENT TEMPLATE</span>
+              "If this fails, it will fail because: ______"<br/>
+              "The assumption most likely wrong is: ______"<br/>
+              "The stakeholder most harmed is: ______"
+            </div>
+          </div>
+          
+          <!-- Phase 2 -->
+          <div class="tour-card" id="tour-card-2">
+            <div class="tour-header">
+              <span class="tour-phase-num">PHASE 2</span>
+              <i data-lucide="database"></i>
+            </div>
+            <h3 class="tour-title">Registry & Precedents</h3>
+            <p class="tour-desc">PANCHAI maps task semantics to a client's local agent capability registry, dynamically creating the council. It pulls relevant historical precedents from the client's Files silo.</p>
+            <div class="tour-solve">
+              <div class="tour-solve-label"><i data-lucide="git-branch"></i> Domain-Agnostic Engine</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">One codebase. The council composition and contextual memories change dynamically per client pod registry. Zero hardcoded agents.</p>
+            </div>
+            <div class="tour-interactive-demo">
+              <span style="color: var(--accent); font-weight: 700; font-size: 10px; display: block; margin-bottom: 4px;">LEMMA PRIMITIVE RAG</span>
+              <span style="color: var(--text-muted); font-size:11px;">method: "HYBRID" (Semantic + BM25 keyword)<br/>retrieval: client_pod/memory/verdicts/*.md</span>
+            </div>
+          </div>
+          
+          <!-- Phase 3 -->
+          <div class="tour-card" id="tour-card-3">
+            <div class="tour-header">
+              <span class="tour-phase-num">PHASE 3</span>
+              <i data-lucide="message-square"></i>
+            </div>
+            <h3 class="tour-title">Active Debate Loop</h3>
+            <p class="tour-desc">A frontier model moderator (Brain) reads prior arguments, identifies the core axes of disagreement, and issues personalized challenge prompts. Cap at 3 rounds + 1 bonus round.</p>
+            <div class="tour-solve">
+              <div class="tour-solve-label"><i data-lucide="users"></i> Deliberation Forcing</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">Agents cannot restate prior positions; they must defend their logic against conflicting logic, leading to compromise or reframing.</p>
+            </div>
+            <div class="tour-interactive-demo">
+              <span style="color: var(--reframe); font-weight: 700; font-size: 10px; display: block; margin-bottom: 4px;">ACTIVE MODERATION PATTERN</span>
+              Brain reads -> Pinpoints disagreement -> Injects target prompt to Agent-N -> Loop resets.
+            </div>
+          </div>
+          
+          <!-- Phase 4 -->
+          <div class="tour-card" id="tour-card-4">
+            <div class="tour-header">
+              <span class="tour-phase-num">PHASE 4</span>
+              <i data-lucide="pie-chart"></i>
+            </div>
+            <h3 class="tour-title">Verdict Synthesis</h3>
+            <p class="tour-desc">Once rounds lock, the Brain parses positions and counts votes. Standard tasks require Simple Majority (2/3); High-stakes require Supermajority (3/3) consensus.</p>
+            <div class="tour-solve">
+              <div class="tour-solve-label"><i data-lucide="check-circle-2"></i> Structured Decision output</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">Generates a locked verdict record, confidence score, minority dissent logs, and recommended enterprise actions.</p>
+            </div>
+            <div class="tour-interactive-demo">
+              <span style="color: var(--consensus); font-weight: 700; font-size: 10px; display: block; margin-bottom: 4px;">VERDICT JSON FORMAT</span>
+              { "verdict": "ESCALATED", "confidence_score": 0.58, "hitl_required": true }
+            </div>
+          </div>
+          
+          <!-- Phase 5 -->
+          <div class="tour-card" id="tour-card-5">
+            <div class="tour-header">
+              <span class="tour-phase-num">PHASE 5</span>
+              <i data-lucide="user-check"></i>
+            </div>
+            <h3 class="tour-title">HITL & Silo Archiving</h3>
+            <p class="tour-desc">An escalation matrix (ties, low confidence, high divergence, or critical pre-mortem) triggers a human review flow node. The final resolution is stored in client Files silo.</p>
+            <div class="tour-solve">
+              <div class="tour-solve-label"><i data-lucide="shield-check"></i> Epistemic Ceiling Safety</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">Prevents auto-approval timeouts and creates a federated memory audit trail for compliance.</p>
+            </div>
+            <div class="tour-interactive-demo">
+              <span style="color: var(--warning); font-weight: 700; font-size: 10px; display: block; margin-bottom: 4px;">ESCALATION TRIGGERS</span>
+              Confidence &lt; 60% | Divergence == HIGH | Pre-mortem == CRITICAL | Vote == TIE
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- View 1: Live Feed -->
+      <div id="view-feed" class="view">
         <div id="feed-container" class="feed-container">
-          <div class="empty-state">
-            <i data-lucide="message-square" class="icon-xl"></i>
-            <h3>No Active Debate</h3>
-            <p>Select a session to view the live deliberation feed.</p>
+          <!-- Hero Section -->
+          <div id="hero-section" class="hero-section">
+            <i data-lucide="scale" class="hero-icon"></i>
+            <h1>The Institutional Antidote to AI Overconfidence</h1>
+            <p class="hero-tagline">PANCHAI is a multi-agent deliberation engine that challenges enterprise goals, intercepts sycophancy, and analyzes failure modes before decisions execute.</p>
+            
+            <span class="hero-demos-title">Select A Demo Scenario</span>
+            <div class="hero-demos">
+              <div class="demo-card" onclick="launchDemo('yesmadam','Should we approve this refund for Customer #4821? Customer tier Gold, purchase 47 days ago, policy = 30-day returns, claim = product defect, 2 prior refunds in 6 months.')">
+                <div class="demo-label">HR / COMPLIANCE DOMAIN</div>
+                <h3>Refund Exception Decision</h3>
+                <p>Policy Analyst, Customer Advocate, and Fraud Assessor debate a late refund request. Watch the system catch repeating abuse and trigger HITL.</p>
+                <span class="demo-btn"><i data-lucide="play" style="width:14px;height:14px;"></i> Launch Simulation</span>
+              </div>
+              <div class="demo-card" onclick="launchDemo('binocs','Should we pause this vendor order? Inventory 340 units, demand forecast 280 units, vendor reliability 62%, lead time 45 days, cash position tight.')">
+                <div class="demo-label">SUPPLY CHAIN DOMAIN</div>
+                <h3>Vendor Stagger Decision</h3>
+                <p>Supply Chain, Finance, and Procurement specialists debate a vendor pause. Watch the council reject the binary pause and reframe the strategy.</p>
+                <span class="demo-btn"><i data-lucide="play" style="width:14px;height:14px;"></i> Launch Simulation</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- View: Verdict Dashboard -->
+      <!-- View 2: Verdict Dashboard -->
       <div id="view-verdict" class="view">
         <div id="verdict-container" class="dashboard-grid" style="display: none;">
           
           <!-- Outcome -->
           <div class="card outcome-card">
             <div id="vd-verdict-text" class="verdict-large v-APPROVED">APPROVED</div>
-            <p id="vd-reason" style="color: var(--text-muted); max-width: 600px;">—</p>
+            <p id="vd-reason">—</p>
           </div>
           
           <!-- Confidence -->
           <div class="card confidence-gauge">
-            <div class="card-title">Confidence Score</div>
+            <div class="card-title"><i data-lucide="shield-check"></i> Confidence Score</div>
             <div class="gauge-circle">
-              <svg class="gauge-svg" width="120" height="120">
-                <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
-                <circle id="vd-gauge-fill" class="gauge-fill" cx="60" cy="60" r="50" stroke="#10b981" stroke-dasharray="0 314"></circle>
+              <svg class="gauge-svg" width="150" height="150">
+                <circle class="gauge-bg" cx="75" cy="75" r="65"></circle>
+                <circle id="vd-gauge-fill" class="gauge-fill" cx="75" cy="75" r="65" stroke="#10b981" stroke-dasharray="0 408"></circle>
               </svg>
               <span id="vd-confidence-text">0%</span>
             </div>
-            <p id="vd-confidence-label" style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 8px;">—</p>
+            <p id="vd-confidence-label" style="font-size: 13px; color: var(--text-secondary); text-align: center; margin-top: 8px;">—</p>
           </div>
           
           <!-- Vote Breakdown -->
           <div class="card vote-breakdown">
-            <div class="card-title">Council Vote</div>
+            <div class="card-title"><i data-lucide="users"></i> Council Vote</div>
             <div class="vote-bar-container" id="vd-vote-bar">
               <div class="vote-segment seg-for" style="width: 50%;">FOR</div>
               <div class="vote-segment seg-against" style="width: 50%;">AGAINST</div>
@@ -477,11 +1738,11 @@
             <div class="conflict-grid">
               <div class="conflict-box">
                 <div class="conflict-label">User's Desired Goal</div>
-                <div id="vd-user-goal" style="font-size: 15px;">—</div>
+                <div id="vd-user-goal" style="font-size: 14px; font-weight: 500;">—</div>
               </div>
               <div class="conflict-box">
-                <div class="conflict-label">Council's Finding</div>
-                <div id="vd-council-finding" style="font-size: 15px;">—</div>
+                <div class="conflict-label">Council's Deliberation Finding</div>
+                <div id="vd-council-finding" style="font-size: 14px; font-weight: 500;">—</div>
               </div>
             </div>
             <div id="vd-divergence-alert" class="divergence-alert div-low">
@@ -493,57 +1754,242 @@
           <!-- HITL Form (Conditional) -->
           <div id="hitl-form-container">
             <div class="hitl-header">
-              <i data-lucide="alert-triangle" class="icon-lg"></i>
-              <h2 style="font-family: var(--font-display);">Human-in-the-Loop Required</h2>
+              <i data-lucide="alert-triangle" style="width: 24px; height: 24px;"></i>
+              <h2 style="font-family: var(--font-display); font-weight: 700;">Human-in-the-Loop Override Required</h2>
             </div>
-            <p style="margin-bottom: 24px; color: #e2e8f0;" id="hitl-reason-text">—</p>
+            <p style="margin-bottom: 24px; color: var(--text-secondary); font-size: 14px;" id="hitl-reason-text">—</p>
             
             <div class="hitl-options">
               <div class="hitl-option">
                 <input type="radio" name="hitl_decision" id="dec-approve" value="approve">
-                <label for="dec-approve"><i data-lucide="check" style="color: var(--for-color)"></i> Approve (Override)</label>
+                <label for="dec-approve"><i data-lucide="check" style="color: var(--consensus)"></i> APPROVE (Override)</label>
               </div>
               <div class="hitl-option">
                 <input type="radio" name="hitl_decision" id="dec-reject" value="reject">
-                <label for="dec-reject"><i data-lucide="x" style="color: var(--against-color)"></i> Reject (Uphold Council)</label>
+                <label for="dec-reject"><i data-lucide="x" style="color: var(--risk)"></i> REJECT (Uphold Council)</label>
               </div>
               <div class="hitl-option">
                 <input type="radio" name="hitl_decision" id="dec-sendback" value="send_back">
-                <label for="dec-sendback"><i data-lucide="refresh-cw" style="color: var(--reframe-color)"></i> Send Back (Re-Debate)</label>
+                <label for="dec-sendback"><i data-lucide="refresh-cw" style="color: var(--reframe)"></i> SEND BACK (Re-Debate)</label>
               </div>
             </div>
             
-            <textarea id="hitl-reason-input" class="hitl-reason" placeholder="Provide reasoning for your decision (Required for Reject / Send Back)..."></textarea>
+            <textarea id="hitl-reason-input" class="hitl-reason" placeholder="Provide operational feedback to the council (Required for Reject / Send Back)..."></textarea>
             
-            <button id="hitl-submit-btn" class="btn-primary" disabled>
-              Submit Decision <i data-lucide="arrow-right" class="icon-sm"></i>
+            <button id="hitl-submit-btn" class="btn-action" disabled>
+              Submit Decisive Verdict <i data-lucide="arrow-right"></i>
             </button>
           </div>
 
         </div>
         
         <div id="verdict-empty" class="empty-state">
-          <i data-lucide="clock" class="icon-xl"></i>
-          <h3>Debate in Progress</h3>
-          <p>The verdict dashboard will populate once deliberation completes.</p>
+          <i data-lucide="clock" style="width: 48px; height: 48px;"></i>
+          <h3>Deliberation In Progress</h3>
+          <p>The verdict dashboard will compile as soon as the active council finishes voting.</p>
+        </div>
+      </div>
+
+      <!-- View 3: Impact Dashboard -->
+      <div id="view-metrics" class="view">
+        <div class="metrics-dashboard">
+          <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 8px;">System Impact</h2>
+          <p style="color: var(--text-secondary); margin-bottom: 36px; font-size: 15px;">Governance statistics demonstrating PANCHAI's control over hallucination and sycophancy.</p>
+          
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-value green" id="metric-sycophancy">184</div>
+              <div class="metric-label">Sycophancy Blocks</div>
+              <div class="metric-desc">Times the Goal Stripper prevented AI compliance validation.</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value blue" id="metric-sessions">129</div>
+              <div class="metric-label">Decisions Handled</div>
+              <div class="metric-desc">Total business problems deliberated by agent councils.</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value gold" id="metric-hitl">38</div>
+              <div class="metric-label">HITL Interventions</div>
+              <div class="metric-desc">Sessions escalated to manual human approval.</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value green" id="metric-avgconf">74%</div>
+              <div class="metric-label">Avg. Confidence</div>
+              <div class="metric-desc">Mean epistemic confidence across synthesized verdicts.</div>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px;">
+            <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text);">How PANCHAI Safeguards Enterprise AI</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;">
+              <div style="padding: 20px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div style="font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 8px; text-transform: uppercase;">1. Blind Tribunal</div>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">By stripping preferred outcomes, agents evaluate facts in isolation. Groupthink and validation loops are structurally impossible.</p>
+              </div>
+              <div style="padding: 20px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div style="font-size: 12px; font-weight: 700; color: var(--consensus); margin-bottom: 8px; text-transform: uppercase;">2. Pre-Mortem Forcing</div>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">Commitment to failure modes prior to argument shifts LLM behavior from optimization validation to risk discovery.</p>
+              </div>
+              <div style="padding: 20px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div style="font-size: 12px; font-weight: 700; color: var(--warning); margin-bottom: 8px; text-transform: uppercase;">3. Active Moderation</div>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">Personalized challenge prompts force agents to directly critique each other's assumptions instead of repeating scripts.</p>
+              </div>
+              <div style="padding: 20px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div style="font-size: 12px; font-weight: 700; color: var(--risk); margin-bottom: 8px; text-transform: uppercase;">4. Siloed Archiving</div>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">Deliberations are stored as permanent markdown verdicts in independent client pods, creating transparent audit rails.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
   </div>
 
-  <script>
-    // Initialize Icons
-    lucide.createIcons();
+  <!-- Intake Modal -->
+  <div id="intake-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <i data-lucide="scale" style="width: 28px; height: 28px;"></i>
+        <h2>New Deliberation Session</h2>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="intake-task">Task / Prompt</label>
+          <textarea id="intake-task" placeholder="Describe the enterprise task or question to deliberate..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="intake-client">Client ID</label>
+          <input id="intake-client" type="text" placeholder="e.g. yesmadam, binocs" value="yesmadam" />
+        </div>
+        <div class="form-group">
+          <label for="intake-context">Stakes Level</label>
+          <select id="intake-stakes" class="session-select" style="width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: rgba(0,0,0,0.4); color: var(--text);">
+            <option value="STANDARD">Standard Stakes (Simple Majority)</option>
+            <option value="HIGH">High Stakes (Supermajority)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="hideIntakeModal()">Cancel</button>
+        <button class="btn-action" onclick="submitIntake()" id="intake-submit-btn">
+          Start Deliberation <i data-lucide="arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
 
-    // Setup Lemma Client
-    const client = new window.LemmaClient.LemmaClient();
-    
-    // State
+  <script>
+    // Injected or fallback configuration
+    const lemmaConfig = window.__LEMMA_CONFIG__ || {};
+    const client = window.LemmaClient?.LemmaClient
+      ? new window.LemmaClient.LemmaClient({
+          apiUrl: lemmaConfig.apiUrl || window.__LEMMA_BASE_URL__ || 'https://api.lemma.work'
+        })
+      : null;
+    if (client && !client.podId) {
+      const podId = lemmaConfig.podId || window.__LEMMA_POD_ID__;
+      if (podId) client.setPodId(podId);
+    }
+
+    // State Variables
+    let lemmaConnected = false;
     let activeSessionId = null;
     let feedSubscription = null;
     let sessionSubscription = null;
     let currentWorkflowRunId = null;
     let formNodeId = null;
+    let isSimulationActive = false;
+    let simulationTimeoutIds = [];
+    
+    // In-memory Database for Simulation Mode
+    let simSessions = [
+      {
+        id: "sim-yesmadam-1",
+        client_id: "yesmadam",
+        task_input: "Should we approve this refund for Customer #4821? Customer tier Gold, purchase 47 days ago, policy = 30-day returns, claim = product defect, 2 prior refunds in 6 months.",
+        user_goal: "Approve the refund",
+        stripped_task: "Refund request evaluation: Customer Gold tier, purchase 47 days ago, refund window 30 days, claim is product defect, 2 prior refunds in 6 months.",
+        stakes_level: "HIGH",
+        status: "done"
+      },
+      {
+        id: "sim-binocs-1",
+        client_id: "binocs",
+        task_input: "Should we pause this vendor order? Inventory 340 units, demand forecast 280 units, vendor reliability 62%, lead time 45 days, cash position tight.",
+        user_goal: "Pause the vendor order",
+        stripped_task: "Vendor order evaluation: Inventory 340 units, demand forecast 280 units, reliability 62%, lead time 45 days, cash status tight.",
+        stakes_level: "STANDARD",
+        status: "done"
+      }
+    ];
+
+    let simVerdicts = {
+      "sim-yesmadam-1": {
+        session_id: "sim-yesmadam-1",
+        verdict: "ESCALATED",
+        confidence_score: 0.58,
+        council_vote_for: ["customer-advocate"],
+        council_vote_against: ["policy-analyst", "fraud-risk-assessor"],
+        council_vote_abstain: [],
+        council_vote_reframe: [],
+        conflict_report: {
+          user_goal: "Approve the refund",
+          council_finding: "Reject or escalate pending defect verification because the request is outside the 30-day return window and has repeating refund flags.",
+          divergence_severity: "HIGH"
+        },
+        recommended_action: "Escalate to a human approver with defect evidence and refund-history context.",
+        hitl_required: true,
+        hitl_reason: "High divergence from user goal and low confidence require human review."
+      },
+      "sim-binocs-1": {
+        session_id: "sim-binocs-1",
+        verdict: "REFRAMED",
+        confidence_score: 0.72,
+        council_vote_for: [],
+        council_vote_against: [],
+        council_vote_abstain: [],
+        council_vote_reframe: ["supply-chain-analyst", "financial-risk", "procurement-specialist"],
+        conflict_report: {
+          user_goal: "Pause the vendor order",
+          council_finding: "Reframe to a partial staggered order with payment renegotiation, preserving supply coverage while easing cash pressure.",
+          divergence_severity: "MEDIUM"
+        },
+        recommended_action: "Proceed with a partial order (150 units) and renegotiated payment terms.",
+        hitl_required: false,
+        hitl_reason: "Consensus reframe with adequate confidence."
+      }
+    };
+
+    let simMessages = {
+      "sim-yesmadam-1": [
+        { round_number: 0, agent_name: "policy-analyst", reasoning_bias: "rule-following", position: "PREMORTEM", argument: "Pre-Mortem: If this refund fails, it will be because we created a policy exception without verifying the product defect, leading to policy erosion. The assumption most likely to be wrong is that the customer's defect claim is legitimate without verification. Harmed: YesMadam finance team." },
+        { round_number: 0, agent_name: "customer-advocate", reasoning_bias: "empathetic", position: "PREMORTEM", argument: "Pre-Mortem: If this refund fails, it will be because we denied a Gold member, causing them to leave and post a negative review. The assumption most likely to be wrong is that a refund exception creates fraud risk rather than long-term customer value. Harmed: Brand reputation." },
+        { round_number: 0, agent_name: "fraud-risk-assessor", reasoning_bias: "conservative", position: "PREMORTEM", argument: "Pre-Mortem: If this refund fails, it will be because we ignored the pattern of 2 prior refunds in 6 months, enabling a refund-abuse vector. The assumption most likely to be wrong is that Gold status excludes malicious exploitation. Harmed: Bottom-line profitability." },
+        { round_number: 1, agent_name: "customer-advocate", reasoning_bias: "empathetic", position: "FOR", argument: "I vote FOR approving the refund. This is a Gold-tier customer with 2 years of tenure. A product defect claim is legally distinct and falls under consumer rights, which override standard 30-day limits. Let's prioritize customer retention." },
+        { round_number: 1, agent_name: "policy-analyst", reasoning_bias: "rule-following", position: "REFRAME", argument: "I propose REFRAME. We lack specific evidence of the defect. We should verify the defect first, and if valid, apply a structured tier-based exception. We shouldn't make a binary decision without checking the facts." },
+        { round_number: 1, agent_name: "fraud-risk-assessor", reasoning_bias: "conservative", position: "AGAINST", argument: "I vote AGAINST. The customer has already had 2 refunds in the last 6 months. This is a clear abuse pattern. Gold status shouldn't override audit flags." },
+        { round_number: 1, agent_name: "panchai-brain", reasoning_bias: "Moderator", position: "MODERATOR", argument: "Moderator Challenge: Fraud Risk Assessor cites a clear refund abuse pattern, while Customer Advocate argues Gold tier tenure earns a presumption of good faith. Policy Analyst proposes a verification check. Customer Advocate, how do you justify overriding the fraud flag? Fraud Risk, is there a threshold of tenure where exception review is warranted?" },
+        { round_number: 2, agent_name: "customer-advocate", reasoning_bias: "empathetic", position: "FOR", argument: "In response to Fraud Risk: Yes, 2 refunds is a signal, but for a Gold customer over 2 years, the total transaction volume is high. We should apply standard identity check, and if passed, approve it. Denying them over a defect claim is a higher brand risk." },
+        { round_number: 2, agent_name: "policy-analyst", reasoning_bias: "rule-following", position: "REFRAME", argument: "Building on both responses: The customer advocate operates from principle (loyalty deserves protection) and the fraud assessor from principle (risk must be verified independently). Both are valid. I propose a middle path: a tiered evaluation framework where Gold 2-year members receive an enhanced review protocol that includes (1) identity confirmation, (2) transaction pattern check, and (3) escalated approval if anomalous. This reframes the debate." },
+        { round_number: 2, agent_name: "fraud-risk-assessor", reasoning_bias: "conservative", position: "AGAINST", argument: "In response to Customer Advocate: Loyalty is not a shield against abuse. Standard verification is not enough. I shift to a conditional position: I am AGAINST approval unless senior operations manually inspect the defect history." },
+        { round_number: 2, agent_name: "panchai-brain", reasoning_bias: "Moderator", position: "MODERATOR", argument: "Moderator Challenge: Round 2 has produced progress. Policy Analyst proposes a structured verification framework, while Fraud Risk has shifted to conditional opposition. Let's lock in final positions on this structured protocol. Do we accept the Policy Analyst's 3-step verification system?" },
+        { round_number: 3, agent_name: "policy-analyst", reasoning_bias: "rule-following", position: "REFRAME", argument: "FINAL POSITION: Formal proposal for Gold-tier members ΓÇö adopt verification protocol: (1) Identity confirmation, (2) Transaction pattern consistency, (3) If either flags, escalate to senior review. This converts the philosophical divide into operational guidance." },
+        { round_number: 3, agent_name: "customer-advocate", reasoning_bias: "empathetic", position: "FOR", argument: "FINAL POSITION: After considering the fraud risk assessor's concerns about exploitation and the policy analyst's call for structured evaluation, I maintain my FOR position but with nuance. I accept that blind trust is not appropriate. Let's presume good faith but apply basic checks." },
+        { round_number: 3, agent_name: "fraud-risk-assessor", reasoning_bias: "conservative", position: "AGAINST", argument: "FINAL POSITION: Still AGAINST blanket approval. Loyalty is not a shield against abuse. Gold tenure should earn a thorough review, not a shortcut." }
+      ],
+      "sim-binocs-1": [
+        { round_number: 0, agent_name: "supply-chain-analyst", reasoning_bias: "operational-continuity", position: "PREMORTEM", argument: "Pre-Mortem: If we pause the order, we will run out of inventory in 45 days due to lead times, breaking supply continuity. Wrong assumption: Demand will stay low or lead times don't matter. Harmed: Delivery speed & client satisfaction." },
+        { round_number: 0, agent_name: "financial-risk", reasoning_bias: "cash-preservation", position: "PREMORTEM", argument: "Pre-Mortem: If we don't pause the order, we will experience a cash flow crisis, unable to pay other vendors. Wrong assumption: Cash buffer is sufficient. Harmed: Company liquidity." },
+        { round_number: 0, agent_name: "procurement-specialist", reasoning_bias: "vendor-relationship", position: "PREMORTEM", argument: "Pre-Mortem: If we pause the order, we will damage our relationship with this key vendor, who has a 62% reliability score already. Wrong assumption: Vendor will easily resume shipping later. Harmed: Sourcing network." },
+        { round_number: 1, agent_name: "supply-chain-analyst", reasoning_bias: "operational-continuity", position: "REFRAME", argument: "Pausing is too binary. 45-day lead time is too long. I propose a partial, staggered order." },
+        { round_number: 1, agent_name: "financial-risk", reasoning_bias: "cash-preservation", position: "REFRAME", argument: "I support a reframe. We must preserve cash, but a complete pause breaks supply. Let's renegotiate payment terms to split the bill." },
+        { round_number: 1, agent_name: "procurement-specialist", reasoning_bias: "vendor-relationship", position: "REFRAME", argument: "I agree with a reframe. Stagger the order and offer vendor 50% upfront, 50% net-60 to preserve the relationship." },
+        { round_number: 1, agent_name: "panchai-brain", reasoning_bias: "Moderator", position: "MODERATOR", argument: "Moderator Challenge: The council is in consensus to REFRAME. All members agree a binary pause is dangerous. Supply Chain proposes staggered order, Finance proposes split billing, Procurement proposes net-60. Let's align on a unified proposal." },
+        { round_number: 2, agent_name: "supply-chain-analyst", reasoning_bias: "operational-continuity", position: "REFRAME", argument: "We should order 150 units now (covering demand next 25 days) instead of 300, and place the rest next month." },
+        { round_number: 2, agent_name: "financial-risk", reasoning_bias: "cash-preservation", position: "REFRAME", argument: "Staggering order to 150 units cuts immediate cost by 50%. This keeps cash within safety margins." },
+        { round_number: 2, agent_name: "procurement-specialist", reasoning_bias: "vendor-relationship", position: "REFRAME", argument: "I will draft the staggered order terms with split Net-45 payments. Vendor will accept this because it maintains order continuity." }
+      ]
+    };
 
     // UI Elements
     const sessionSelect = document.getElementById('session-select');
@@ -562,18 +2008,83 @@
       });
     });
 
+    // Architecture Stepper & Tour Syncer
+    function showTourStep(phaseIndex) {
+      // Switch to Tour tab
+      tabs[0].click();
+      
+      // Remove highlighting
+      for (let i = 0; i <= 5; i++) {
+        const card = document.getElementById(`tour-card-${i}`);
+        if (card) card.classList.remove('active-tour');
+      }
+      
+      // Highlight the targeted card
+      const targetCard = document.getElementById(`tour-card-${phaseIndex}`);
+      if (targetCard) {
+        targetCard.classList.add('active-tour');
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Add a temporary glow effect
+        targetCard.style.boxShadow = "0 0 30px rgba(99, 102, 241, 0.4)";
+        setTimeout(() => {
+          targetCard.style.boxShadow = "";
+        }, 1500);
+      }
+    }
+
+    // Connection setup
+    function setConnectionStatus(ok, text) {
+      const dot = document.getElementById('conn-dot');
+      const label = document.getElementById('conn-text');
+      if (ok) {
+        dot.className = 'status-badge-dot connected';
+        label.textContent = text;
+      } else {
+        dot.className = 'status-badge-dot';
+        label.textContent = text;
+      }
+    }
+
     // Initialize App
     async function initApp() {
-      await client.initialize();
-      await loadSessions();
+      lucide.createIcons();
       
+      if (!client) {
+        setConnectionStatus(false, 'Simulation Mode');
+        lemmaConnected = false;
+        loadSessions();
+      } else {
+        try {
+          await client.initialize();
+          if (client.podId) {
+            lemmaConnected = true;
+            setConnectionStatus(true, 'Live Pod Mode');
+            loadSessions();
+          } else {
+            lemmaConnected = false;
+            setConnectionStatus(false, 'Simulation Mode');
+            loadSessions();
+          }
+        } catch (err) {
+          console.warn('Lemma SDK initialization failed, entering simulation mode.', err);
+          lemmaConnected = false;
+          setConnectionStatus(false, 'Simulation Mode');
+          loadSessions();
+        }
+      }
+
       sessionSelect.addEventListener('change', (e) => {
-        if (e.target.value) setActiveSession(e.target.value);
+        if (e.target.value) {
+          setActiveSession(e.target.value);
+        } else {
+          showHero();
+        }
       });
-      
+
       document.getElementById('new-session-btn').addEventListener('click', showIntakeModal);
       
-      // HITL Form logic
+      // HITL Form states
       const radios = document.querySelectorAll('input[name="hitl_decision"]');
       const reasonInput = document.getElementById('hitl-reason-input');
       
@@ -588,107 +2099,86 @@
           hitlSubmitBtn.disabled = true;
         }
       };
-      
+
       radios.forEach(r => r.addEventListener('change', checkFormState));
       reasonInput.addEventListener('input', checkFormState);
       
       hitlSubmitBtn.addEventListener('click', submitHitlDecision);
     }
 
-    async function loadSessions() {
-      try {
-        const response = await client.records.list("debate_sessions", { 
-          sort: [{ field: "created_at", direction: "desc" }] 
-        });
-        
-        sessionSelect.innerHTML = '<option value="">-- Select a Session --</option>';
-        
-        if (response.items && response.items.length > 0) {
-          response.items.forEach(session => {
-            const opt = document.createElement('option');
-            opt.value = session.id;
-            const shortGoal = session.task_input ? session.task_input.substring(0, 40) + '...' : 'Unknown Task';
-            opt.textContent = `${session.client_id.toUpperCase()} - ${shortGoal}`;
-            sessionSelect.appendChild(opt);
-          });
-          
-          // Auto-select first
-          sessionSelect.value = response.items[0].id;
-          setActiveSession(response.items[0].id);
-        }
-      } catch (err) {
-        console.error("Error loading sessions:", err);
-        sessionSelect.innerHTML = '<option value="">Error loading sessions</option>';
-      }
-    }
-
-    async function setActiveSession(sessionId) {
-      activeSessionId = sessionId;
+    function showHero() {
+      activeSessionId = null;
+      clearSimulation();
       
       // Reset feed
-      feedContainer.innerHTML = '<div id="feed-empty" class="empty-state"><i data-lucide="message-square" class="icon-xl" style="width:48px;height:48px;"></i><h3>Starting Deliberation...</h3><p>The council is assembling to review this task.</p></div>'; lucide.createIcons();
+      feedContainer.innerHTML = '';
+      const hero = document.getElementById('hero-section');
+      if (hero) {
+        feedContainer.appendChild(hero);
+        hero.style.display = 'flex';
+      }
       
-      // Reset verdict dashboard
       document.getElementById('verdict-container').style.display = 'none';
       document.getElementById('verdict-empty').style.display = 'flex';
-      document.getElementById('hitl-form-container').style.display = 'none';
-      document.getElementById('vd-verdict-text').textContent = '—';
-      document.getElementById('vd-verdict-text').className = 'verdict-large';
-      document.getElementById('vd-reason').textContent = '—';
-      document.getElementById('vd-confidence-text').textContent = '0%';
-      document.getElementById('vd-gauge-fill').style.strokeDasharray = '0 314';
-      document.getElementById('vd-agent-votes').innerHTML = '';
-      document.getElementById('vd-user-goal').textContent = '—';
-      document.getElementById('vd-council-finding').textContent = '—';
       
-      // Load session details
-      try {
-        const session = await client.records.get("debate_sessions", sessionId);
-        updateSidebar(session);
-        
-        // If session already has a verdict, load it immediately
-        if (session.status === 'verdict' || session.status === 'done' || session.status === 'hitl') {
-          await loadVerdict(sessionId);
-          if (session.status === 'hitl') {
-            document.getElementById('hitl-form-container').style.display = 'block';
-            findWorkflowRun(sessionId);
+      // Reset sidebar values
+      document.getElementById('meta-client').textContent = '—';
+      document.getElementById('meta-goal').textContent = '—';
+      document.getElementById('meta-stripped').textContent = '—';
+      document.getElementById('meta-status-text').textContent = 'Waiting for session...';
+      document.getElementById('meta-status-dot').className = 'status-dot';
+      
+      // Reset stepper
+      for (let i = 0; i <= 5; i++) {
+        const el = document.getElementById(`arch-step-${i}`);
+        if (el) el.classList.remove('active', 'completed');
+      }
+      
+      lucide.createIcons();
+    }
+
+    async function loadSessions() {
+      if (lemmaConnected) {
+        try {
+          const response = await client.records.list("debate_sessions", { 
+            sort: [{ field: "created_at", direction: "desc" }] 
+          });
+          
+          sessionSelect.innerHTML = '<option value="">-- Select a Session --</option>';
+          if (response.items && response.items.length > 0) {
+            response.items.forEach(session => {
+              const opt = document.createElement('option');
+              opt.value = session.id;
+              const shortGoal = session.task_input ? session.task_input.substring(0, 45) + '...' : 'Unknown Task';
+              opt.textContent = `${session.client_id.toUpperCase()} - ${shortGoal}`;
+              sessionSelect.appendChild(opt);
+            });
           }
+        } catch (err) {
+          console.error("Error loading sessions from SDK:", err);
+          loadSimSessionsDropdown();
         }
-        
-        // Setup Live Feed
-        setupFeedSubscription(sessionId);
-        
-        // Setup Session Polling/Subscription for Verdict
-        setupSessionPolling(sessionId);
-        
-      } catch (err) {
-        console.error("Error setting active session:", err);
+      } else {
+        loadSimSessionsDropdown();
       }
     }
 
-    function updateSidebar(session) {
-      document.getElementById('meta-client').textContent = session.client_id.toUpperCase();
-      document.getElementById('meta-goal').textContent = session.user_goal || session.task_input;
-      document.getElementById('meta-stripped').textContent = session.stripped_task || "Pending goal stripping...";
-      
-      const stakesBadge = document.getElementById('meta-stakes');
-      if (session.stakes_level === 'HIGH') {
-        stakesBadge.className = 'badge high-stakes';
-        stakesBadge.textContent = 'High Stakes';
-      } else {
-        stakesBadge.className = 'badge standard-stakes';
-        stakesBadge.textContent = 'Standard Stakes';
-      }
-      
-      updateStatusIndicator(session.status);
+    function loadSimSessionsDropdown() {
+      sessionSelect.innerHTML = '<option value="">-- Select a Session --</option>';
+      simSessions.forEach(session => {
+        const opt = document.createElement('option');
+        opt.value = session.id;
+        const shortGoal = session.task_input ? session.task_input.substring(0, 45) + '...' : 'Unknown Task';
+        opt.textContent = `[SIM] ${session.client_id.toUpperCase()} - ${shortGoal}`;
+        sessionSelect.appendChild(opt);
+      });
     }
 
     function updateStatusIndicator(status) {
-      const box = document.getElementById('meta-status-box');
       const dot = document.getElementById('meta-status-dot');
       const text = document.getElementById('meta-status-text');
       
-      dot.className = 'status-dot'; // reset
+      dot.className = 'status-dot';
       
       const statusMap = {
         'pending': { label: 'Pending', active: true },
@@ -706,6 +2196,634 @@
       if (info.active) dot.classList.add('active');
       if (info.done) dot.classList.add('done');
       if (info.hitl) dot.classList.add('hitl');
+      
+      updateArchitectureStep(status);
+    }
+
+    function updateArchitectureStep(status) {
+      for (let i = 0; i <= 5; i++) {
+        const el = document.getElementById(`arch-step-${i}`);
+        if (el) el.classList.remove('active', 'completed');
+      }
+
+      const stepStates = {
+        'pending':     { active: [0], completed: [] },
+        'stripping':   { active: [0], completed: [] },
+        'pre_mortem':  { active: [1, 2], completed: [0] },
+        'debating':    { active: [3], completed: [0, 1, 2] },
+        'voting':      { active: [4], completed: [0, 1, 2, 3] },
+        'verdict':     { active: [], completed: [0, 1, 2, 3, 4, 5] },
+        'hitl':        { active: [5], completed: [0, 1, 2, 3, 4] },
+        'done':        { active: [], completed: [0, 1, 2, 3, 4, 5] }
+      };
+
+      const state = stepStates[status] || { active: [], completed: [] };
+
+      state.completed.forEach(idx => {
+        const el = document.getElementById(`arch-step-${idx}`);
+        if (el) el.classList.add('completed');
+      });
+
+      state.active.forEach(idx => {
+        const el = document.getElementById(`arch-step-${idx}`);
+        if (el) el.classList.add('active');
+      });
+    }
+
+    async function setActiveSession(sessionId) {
+      activeSessionId = sessionId;
+      clearSimulation();
+      
+      // Hide hero
+      const hero = document.getElementById('hero-section');
+      if (hero) hero.style.display = 'none';
+      
+      // Setup feed skeleton
+      feedContainer.innerHTML = '<div id="feed-empty" class="empty-state"><i data-lucide="message-square" class="icon-xl" style="width:48px;height:48px;"></i><h3>Starting Deliberation...</h3><p>The council is assembling to review this task.</p></div>';
+      lucide.createIcons();
+
+      // Reset Verdict dashboard
+      document.getElementById('verdict-container').style.display = 'none';
+      document.getElementById('verdict-empty').style.display = 'flex';
+      document.getElementById('hitl-form-container').style.display = 'none';
+      
+      // Check if simulation session
+      if (sessionId.startsWith('sim-')) {
+        const session = simSessions.find(s => s.id === sessionId);
+        if (session) {
+          updateSidebarSim(session);
+          
+          if (session.status === 'done' || session.status === 'hitl' || session.status === 'verdict') {
+            loadVerdictSim(sessionId);
+            loadMessagesSim(sessionId);
+          } else {
+            // Trigger simulated run
+            runSimulation(session);
+          }
+        }
+      } else {
+        // SDK Mode
+        try {
+          const session = await client.records.get("debate_sessions", sessionId);
+          updateSidebarSim(session);
+          
+          if (session.status === 'verdict' || session.status === 'done' || session.status === 'hitl') {
+            await loadVerdict(sessionId);
+            if (session.status === 'hitl') {
+              document.getElementById('hitl-form-container').style.display = 'block';
+              findWorkflowRun(sessionId);
+            }
+          }
+          
+          setupFeedSubscription(sessionId);
+          setupSessionPolling(sessionId);
+        } catch (err) {
+          console.error("Error setting active session:", err);
+        }
+      }
+    }
+
+    function updateSidebarSim(session) {
+      document.getElementById('meta-client').textContent = session.client_id.toUpperCase();
+      document.getElementById('meta-goal').textContent = session.user_goal || session.task_input;
+      document.getElementById('meta-stripped').textContent = session.stripped_task || "Pending goal stripping...";
+      
+      const stakesBadge = document.getElementById('meta-stakes');
+      if (session.stakes_level === 'HIGH') {
+        stakesBadge.className = 'badge high-stakes';
+        stakesBadge.textContent = 'High Stakes';
+      } else {
+        stakesBadge.className = 'badge standard-stakes';
+        stakesBadge.textContent = 'Standard Stakes';
+      }
+      
+      updateStatusIndicator(session.status);
+    }
+
+    // ─── Simulation Engine for Hackathon Demo Videos ───
+    function clearSimulation() {
+      isSimulationActive = false;
+      simulationTimeoutIds.forEach(id => clearTimeout(id));
+      simulationTimeoutIds = [];
+    }
+
+    function runSimulation(session) {
+      clearSimulation();
+      isSimulationActive = true;
+      
+      // Reset local simulation arrays
+      const sessionId = session.id;
+      const client_id = session.client_id;
+      
+      // Step-by-step pipeline execution
+      const queue = [];
+      
+      // Phase 0: Stripping
+      queue.push({
+        delay: 500,
+        fn: () => {
+          session.status = 'stripping';
+          updateSidebarSim(session);
+        }
+      });
+      
+      // Phase 1: Pre-Mortem Forcing
+      queue.push({
+        delay: 2000,
+        fn: () => {
+          session.status = 'pre_mortem';
+          updateSidebarSim(session);
+          feedContainer.innerHTML = ''; // Clear skeleton
+        }
+      });
+      
+      // Load pre-mortems (Phase 0/1 round)
+      const feedMsgs = simMessages[sessionId] || [];
+      const preMortems = feedMsgs.filter(m => m.round_number === 0);
+      
+      preMortems.forEach((pm, index) => {
+        queue.push({
+          delay: 3500 + (index * 1500),
+          fn: () => {
+            if (!isSimulationActive) return;
+            renderMessageCardSim(pm, -1);
+            // Scroll to bottom
+            const feedView = document.getElementById('view-feed');
+            feedView.scrollTop = feedView.scrollHeight;
+          }
+        });
+      });
+
+      // Phase 3: Active Debate (Round 1)
+      queue.push({
+        delay: 8500,
+        fn: () => {
+          session.status = 'debating';
+          updateSidebarSim(session);
+        }
+      });
+
+      const round1 = feedMsgs.filter(m => m.round_number === 1);
+      round1.forEach((msg, index) => {
+        queue.push({
+          delay: 10000 + (index * 1500),
+          fn: () => {
+            if (!isSimulationActive) return;
+            renderMessageCardSim(msg, 0);
+            const feedView = document.getElementById('view-feed');
+            feedView.scrollTop = feedView.scrollHeight;
+          }
+        });
+      });
+
+      // Phase 3: Debate (Round 2)
+      const round2 = feedMsgs.filter(m => m.round_number === 2);
+      if (round2.length > 0) {
+        round2.forEach((msg, index) => {
+          queue.push({
+            delay: 17000 + (index * 1500),
+            fn: () => {
+              if (!isSimulationActive) return;
+              renderMessageCardSim(msg, 1);
+              const feedView = document.getElementById('view-feed');
+              feedView.scrollTop = feedView.scrollHeight;
+            }
+          });
+        });
+      }
+
+      // Phase 3: Debate (Round 3)
+      const round3 = feedMsgs.filter(m => m.round_number === 3);
+      if (round3.length > 0) {
+        round3.forEach((msg, index) => {
+          queue.push({
+            delay: 24000 + (index * 1500),
+            fn: () => {
+              if (!isSimulationActive) return;
+              renderMessageCardSim(msg, 2);
+              const feedView = document.getElementById('view-feed');
+              feedView.scrollTop = feedView.scrollHeight;
+            }
+          });
+        });
+      }
+
+      // Phase 4: Voting
+      const finalDelay = round3.length > 0 ? 30000 : 17000;
+      queue.push({
+        delay: finalDelay,
+        fn: () => {
+          session.status = 'voting';
+          updateSidebarSim(session);
+        }
+      });
+
+      // Phase 5: Verdict Synthesis / HITL
+      queue.push({
+        delay: finalDelay + 1500,
+        fn: () => {
+          const finalStatus = simVerdicts[sessionId].hitl_required ? 'hitl' : 'done';
+          session.status = finalStatus;
+          updateSidebarSim(session);
+          
+          // Switch to Verdict Tab
+          document.getElementById('tab-verdict').click();
+          loadVerdictSim(sessionId);
+          
+          if (finalStatus === 'hitl') {
+            document.getElementById('hitl-form-container').style.display = 'block';
+          }
+          
+          // Update global counts
+          incrementImpactMetrics();
+        }
+      });
+
+      // Schedule timeouts
+      queue.forEach(item => {
+        const id = setTimeout(item.fn, item.delay);
+        simulationTimeoutIds.push(id);
+      });
+    }
+
+    function renderMessageCardSim(msg, currentRound) {
+      const emptyState = document.getElementById('feed-empty');
+      if (emptyState) emptyState.remove();
+      
+      const msgRound = msg.round_number;
+      if (currentRound !== msgRound) {
+        const div = document.createElement('div');
+        div.className = 'round-divider';
+        div.textContent = msgRound === 0 ? 'Phase: Pre-Mortem' : (msg.position === 'MODERATOR' ? 'Active Moderator' : `Debate Round ${msgRound}`);
+        feedContainer.appendChild(div);
+      }
+      
+      const isMod = msg.position === 'MODERATOR';
+      const posClass = msgRound === 0 ? 'pos-PREMORTEM' : (isMod ? 'pos-MODERATOR' : `pos-${msg.position || 'ABSTAIN'}`);
+      const posLabel = msgRound === 0 ? 'PRE-MORTEM' : (isMod ? 'MODERATOR CHALLENGE' : (msg.position || 'ABSTAIN'));
+      
+      const card = document.createElement('div');
+      card.className = `message-card ${posClass}`;
+      card.innerHTML = `
+        <div class="message-header">
+          <div class="agent-info">
+            <div class="agent-avatar"><i data-lucide="${isMod ? 'scale' : 'bot'}" class="icon"></i></div>
+            <div class="agent-details">
+              <span class="agent-name">${isMod ? 'PANCHAI Moderator' : formatAgentName(msg.agent_name)}</span>
+              <span class="agent-bias">${msg.reasoning_bias || 'Analyst'}</span>
+            </div>
+          </div>
+          <div class="position-badge">${posLabel}</div>
+        </div>
+        <div class="message-body">${escapeHtml(msg.argument)}</div>
+      `;
+      
+      feedContainer.appendChild(card);
+      lucide.createIcons({ root: card });
+    }
+
+    function loadMessagesSim(sessionId) {
+      feedContainer.innerHTML = '';
+      const msgs = simMessages[sessionId] || [];
+      let currentRound = -1;
+      
+      msgs.forEach(msg => {
+        renderMessageCardSim(msg, currentRound);
+        currentRound = msg.round_number;
+      });
+      
+      const feedView = document.getElementById('view-feed');
+      feedView.scrollTop = feedView.scrollHeight;
+    }
+
+    function loadVerdictSim(sessionId) {
+      const v = simVerdicts[sessionId];
+      if (!v) {
+        document.getElementById('verdict-empty').style.display = 'flex';
+        document.getElementById('verdict-container').style.display = 'none';
+        return;
+      }
+      
+      document.getElementById('verdict-empty').style.display = 'none';
+      document.getElementById('verdict-container').style.display = 'grid';
+      
+      const vText = document.getElementById('vd-verdict-text');
+      vText.textContent = v.verdict;
+      vText.className = `verdict-large v-${v.verdict}`;
+      document.getElementById('vd-reason').textContent = v.recommended_action || "Verdict compiled from multi-agent council.";
+      
+      // Confidence score
+      const score = v.confidence_score || 0;
+      const pct = Math.round(score * 100);
+      document.getElementById('vd-confidence-text').textContent = `${pct}%`;
+      
+      const gaugeFill = document.getElementById('vd-gauge-fill');
+      const dashOffset = 408 - (408 * score);
+      gaugeFill.style.strokeDasharray = `${408 - dashOffset} 408`;
+      
+      let cColor = '#f43f5e'; // risk
+      let cLabel = 'Low Consensus Confidence';
+      if (score >= 0.75) { cColor = '#10b981'; cLabel = 'High Consensus Confidence'; }
+      else if (score >= 0.6) { cColor = '#f59e0b'; cLabel = 'Moderate Consensus Confidence'; }
+      
+      gaugeFill.style.stroke = cColor;
+      document.getElementById('vd-confidence-label').textContent = cLabel;
+      
+      // Vote segment lengths
+      const forVotes = v.council_vote_for.length;
+      const againstVotes = v.council_vote_against.length;
+      const reframeVotes = v.council_vote_reframe.length;
+      const total = forVotes + againstVotes + reframeVotes;
+      
+      const bar = document.getElementById('vd-vote-bar');
+      bar.innerHTML = ''; // Clear prior segments
+      
+      if (total > 0) {
+        if (forVotes > 0) {
+          bar.innerHTML += `<div class="vote-segment seg-for" style="width: ${(forVotes/total)*100}%; background: var(--consensus);">${forVotes} FOR</div>`;
+        }
+        if (againstVotes > 0) {
+          bar.innerHTML += `<div class="vote-segment seg-against" style="width: ${(againstVotes/total)*100}%; background: var(--risk);">${againstVotes} AGAINST</div>`;
+        }
+        if (reframeVotes > 0) {
+          bar.innerHTML += `<div class="vote-segment" style="width: ${(reframeVotes/total)*100}%; background: var(--reframe);">${reframeVotes} REFRAME</div>`;
+        }
+      } else {
+        bar.innerHTML = '<div class="vote-segment" style="width: 100%; background: var(--text-muted);">0 VOTES</div>';
+      }
+
+      // Votes list
+      const votesContainer = document.getElementById('vd-agent-votes');
+      votesContainer.innerHTML = '';
+      const renderVote = (name, position) => {
+        let posColor = 'var(--text-muted)';
+        let iconName = 'minus';
+        if (position === 'FOR') { posColor = 'var(--consensus)'; iconName = 'check'; }
+        if (position === 'AGAINST') { posColor = 'var(--risk)'; iconName = 'x'; }
+        if (position === 'REFRAME') { posColor = 'var(--reframe)'; iconName = 'git-branch'; }
+        
+        votesContainer.innerHTML += `
+          <div class="agent-vote-row">
+            <span style="font-weight:600;">${formatAgentName(name)}</span>
+            <span style="color: ${posColor}; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; font-size: 13px;">
+              <i data-lucide="${iconName}" style="width:14px;height:14px;"></i> ${position}
+            </span>
+          </div>
+        `;
+      };
+
+      v.council_vote_for.forEach(a => renderVote(a, 'FOR'));
+      v.council_vote_against.forEach(a => renderVote(a, 'AGAINST'));
+      v.council_vote_reframe.forEach(a => renderVote(a, 'REFRAME'));
+      
+      // Goal divergence
+      if (v.conflict_report) {
+        document.getElementById('vd-user-goal').textContent = v.conflict_report.user_goal;
+        document.getElementById('vd-council-finding').textContent = v.conflict_report.council_finding;
+        
+        const alert = document.getElementById('vd-divergence-alert');
+        const alertText = document.getElementById('vd-div-text');
+        const alertIcon = document.getElementById('vd-div-icon');
+        
+        if (v.conflict_report.divergence_severity === 'HIGH') {
+          alert.className = 'divergence-alert div-high';
+          alertText.textContent = 'High Divergence: Council verdict directly contradicts user goal';
+          alertIcon.setAttribute('data-lucide', 'alert-triangle');
+        } else {
+          alert.className = 'divergence-alert div-low';
+          alertText.textContent = 'Low Divergence: Council matches user goal constraints';
+          alertIcon.setAttribute('data-lucide', 'check-circle');
+        }
+      }
+
+      if (v.hitl_required) {
+        document.getElementById('hitl-reason-text').textContent = v.hitl_reason;
+      }
+      
+      lucide.createIcons();
+    }
+
+    function incrementImpactMetrics() {
+      // Simulate metrics updates
+      const s = parseInt(document.getElementById('metric-sessions').textContent);
+      document.getElementById('metric-sessions').textContent = s + 1;
+    }
+
+    function launchDemo(clientId, taskInput) {
+      document.getElementById('intake-task').value = taskInput;
+      document.getElementById('intake-client').value = clientId;
+      document.getElementById('intake-stakes').value = clientId === 'yesmadam' ? 'HIGH' : 'STANDARD';
+      
+      const btn = document.getElementById('intake-submit-btn');
+      btn.disabled = false;
+      btn.innerHTML = 'Start Deliberation <i data-lucide="arrow-right"></i>';
+      
+      showIntakeModal();
+    }
+
+    // ─── Real SDK Methods ───
+    async function loadVerdict(sessionId) {
+      try {
+        const resp = await client.records.list("verdicts", {
+          filter: [{ field: "session_id", op: "eq", value: sessionId }]
+        });
+        
+        if (!resp.items || resp.items.length === 0) {
+          document.getElementById('verdict-empty').style.display = 'flex';
+          document.getElementById('verdict-container').style.display = 'none';
+          return;
+        }
+        
+        document.getElementById('verdict-empty').style.display = 'none';
+        document.getElementById('verdict-container').style.display = 'grid';
+        
+        const v = resp.items[0];
+        
+        // Verdict Header
+        const vText = document.getElementById('vd-verdict-text');
+        vText.textContent = v.verdict;
+        vText.className = `verdict-large v-${v.verdict}`;
+        document.getElementById('vd-reason').textContent = v.recommended_action || "Verdict reached by council deliberation.";
+        
+        // Confidence Gauge
+        const cScore = v.confidence_score || 0;
+        const pct = Math.round(cScore * 100);
+        document.getElementById('vd-confidence-text').textContent = `${pct}%`;
+        
+        const gaugeFill = document.getElementById('vd-gauge-fill');
+        const dashOffset = 408 - (408 * cScore);
+        gaugeFill.style.strokeDasharray = `${408 - dashOffset} 408`;
+        
+        let cColor = '#f43f5e';
+        let cLabel = 'Low Confidence';
+        if (cScore >= 0.8) { cColor = '#10b981'; cLabel = 'High Confidence'; }
+        else if (cScore >= 0.6) { cColor = '#f59e0b'; cLabel = 'Moderate Confidence'; }
+        
+        gaugeFill.style.stroke = cColor;
+        document.getElementById('vd-confidence-label').textContent = cLabel;
+        
+        // Agent Votes Breakdown
+        let forAgents = [], againstAgents = [], abstainAgents = [], reframeAgents = [];
+        try { forAgents = typeof v.council_vote_for === 'string' ? JSON.parse(v.council_vote_for) : (v.council_vote_for || []); } catch(e){}
+        try { againstAgents = typeof v.council_vote_against === 'string' ? JSON.parse(v.council_vote_against) : (v.council_vote_against || []); } catch(e){}
+        try { abstainAgents = typeof v.council_vote_abstain === 'string' ? JSON.parse(v.council_vote_abstain) : (v.council_vote_abstain || []); } catch(e){}
+        try { reframeAgents = typeof v.council_vote_reframe === 'string' ? JSON.parse(v.council_vote_reframe) : (v.council_vote_reframe || []); } catch(e){}
+        
+        const totalVotes = forAgents.length + againstAgents.length + abstainAgents.length + reframeAgents.length;
+        const bar = document.getElementById('vd-vote-bar');
+        bar.innerHTML = '';
+        
+        if (totalVotes > 0) {
+          const forPct = Math.round((forAgents.length / totalVotes) * 100);
+          const againstPct = Math.round((againstAgents.length / totalVotes) * 100);
+          const reframePct = Math.round((reframeAgents.length / totalVotes) * 100);
+          
+          if (forAgents.length > 0) {
+            bar.innerHTML += `<div class="vote-segment seg-for" style="width: ${forPct}%;">FOR</div>`;
+          }
+          if (againstAgents.length > 0) {
+            bar.innerHTML += `<div class="vote-segment seg-against" style="width: ${againstPct}%;">AGAINST</div>`;
+          }
+          if (reframeAgents.length > 0) {
+            bar.innerHTML += `<div class="vote-segment" style="width: ${reframePct}%; background: var(--reframe);">${reframeAgents.length} REFRAME</div>`;
+          }
+        } else {
+          bar.innerHTML = '<div class="vote-segment" style="width: 100%; background: var(--text-muted);">0 VOTES</div>';
+        }
+
+        const votesContainer = document.getElementById('vd-agent-votes');
+        votesContainer.innerHTML = '';
+        const addVote = (agent, pos) => {
+          let posColor = pos === 'FOR' ? 'var(--consensus)' : (pos === 'AGAINST' ? 'var(--risk)' : (pos === 'REFRAME' ? 'var(--reframe)' : 'var(--text-muted)'));
+          let icon = pos === 'FOR' ? 'check' : (pos === 'AGAINST' ? 'x' : (pos === 'REFRAME' ? 'git-branch' : 'minus'));
+          votesContainer.innerHTML += `
+            <div class="agent-vote-row">
+              <span>${formatAgentName(agent)}</span>
+              <span style="color: ${posColor}; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px;">
+                <i data-lucide="${icon}" class="icon-sm"></i> ${pos}
+              </span>
+            </div>
+          `;
+        };
+        forAgents.forEach(a => addVote(a, 'FOR'));
+        againstAgents.forEach(a => addVote(a, 'AGAINST'));
+        reframeAgents.forEach(a => addVote(a, 'REFRAME'));
+        abstainAgents.forEach(a => addVote(a, 'ABSTAIN'));
+        
+        // Conflict Report
+        if (v.conflict_report) {
+          let cr = typeof v.conflict_report === 'string' ? JSON.parse(v.conflict_report) : v.conflict_report;
+          document.getElementById('vd-user-goal').textContent = cr.user_goal || 'N/A';
+          document.getElementById('vd-council-finding').textContent = cr.council_finding || 'N/A';
+          
+          const alert = document.getElementById('vd-divergence-alert');
+          const alertText = document.getElementById('vd-div-text');
+          const alertIcon = document.getElementById('vd-div-icon');
+          if (cr.divergence_severity === 'HIGH') {
+            alert.className = 'divergence-alert div-high';
+            alertText.textContent = 'High Divergence: Council contradicts user goal';
+            alertIcon.setAttribute('data-lucide', 'alert-triangle');
+          } else {
+            alert.className = 'divergence-alert div-low';
+            alertText.textContent = 'Low Divergence: Council aligns with user goal';
+            alertIcon.setAttribute('data-lucide', 'check-circle');
+          }
+        }
+        
+        if (v.hitl_required) {
+          document.getElementById('hitl-reason-text').textContent = v.hitl_reason || "Escalation thresholds met.";
+        }
+        
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Error loading verdict:", err);
+      }
+    }
+
+    async function submitHitlDecision() {
+      const btn = document.getElementById('hitl-submit-btn');
+      const decision = document.querySelector('input[name="hitl_decision"]:checked').value;
+      const reason = document.getElementById('hitl-reason-input').value;
+      
+      btn.disabled = true;
+      btn.innerHTML = 'Submitting Verdict Override... <i data-lucide="loader" class="icon-sm"></i>';
+      lucide.createIcons({root: btn});
+      
+      if (activeSessionId.startsWith('sim-')) {
+        // Simulation resolution
+        setTimeout(() => {
+          document.getElementById('hitl-form-container').innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+              <i data-lucide="check-circle" style="color: var(--consensus); width: 48px; height: 48px; margin-bottom: 16px;"></i>
+              <h3>Verdict Override Processed</h3>
+              <p style="color: var(--text-muted); margin-top: 8px;">Decision recorded: <strong>${decision.toUpperCase()}</strong>. Target systems updated.</p>
+            </div>
+          `;
+          lucide.createIcons();
+          
+          // Update sim session status
+          const session = simSessions.find(s => s.id === activeSessionId);
+          if (session) {
+            session.status = 'done';
+            updateSidebarSim(session);
+          }
+        }, 1200);
+        return;
+      }
+      
+      try {
+        if (currentWorkflowRunId) {
+          const podId = client.podId;
+          await client.request('POST', `/pods/${podId}/workflow-runs/${currentWorkflowRunId}/form`, {
+            body: {
+              node_id: formNodeId || 'hitl_approval',
+              inputs: { decision, decision_reason: reason }
+            }
+          });
+        } else {
+          await client.records.create("hitl_queue", {
+            session_id: activeSessionId,
+            status: "resolved",
+            decision: decision,
+            decision_reason: reason
+          });
+          await client.records.update("debate_sessions", activeSessionId, {
+            status: decision === 'send_back' ? 'debating' : 'done'
+          });
+        }
+        
+        document.getElementById('hitl-form-container').innerHTML = `
+          <div style="text-align: center; padding: 20px;">
+            <i data-lucide="check-circle" style="color: var(--consensus); width: 48px; height: 48px; margin-bottom: 16px;"></i>
+            <h3>Decision Recorded</h3>
+            <p style="color: var(--text-muted); margin-top: 8px;">The pipeline has successfully processed your verdict override.</p>
+          </div>
+        `;
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Error submitting HITL:", err);
+        btn.disabled = false;
+        btn.innerHTML = 'Error. Try Again';
+      }
+    }
+
+    async function findWorkflowRun(sessionId) {
+      try {
+        const podId = client.podId;
+        const listResp = await client.request('GET', `/pods/${podId}/workflows/debate-pipeline/runs`);
+        const waitingRuns = (listResp?.items || []).filter(run => run.status === 'WAITING');
+        for (const summary of waitingRuns) {
+          const detailResp = await client.request('GET', `/pods/${podId}/workflow-runs/${summary.id}`);
+          const ctx = detailResp?.execution_context || {};
+          if (JSON.stringify(ctx).includes(sessionId)) {
+            currentWorkflowRunId = detailResp.id;
+            formNodeId = detailResp.active_wait?.node_id || 'hitl_approval';
+            break;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not find workflow run:', err);
+      }
     }
 
     function setupFeedSubscription(sessionId) {
@@ -715,56 +2833,95 @@
         feedSubscription = null;
       }
       
+      let lastRenderedTime = 0;
       let currentRound = -1;
+      let pollTimer = null;
       
-      feedSubscription = client.datastore.watchChanges({
-        table: "debate_messages",
-        onChange: async (frame) => {
-          if (frame.operation === "insert" && activeSessionId === sessionId) {
-            try {
-              const msg = await client.records.get("debate_messages", frame.record_id);
-              if (msg && msg.session_id === sessionId) {
-                renderMessageCard(msg, currentRound);
-                currentRound = msg.round_number;
-                // Auto scroll
-                const feedView = document.getElementById('view-feed');
-                feedView.scrollTop = feedView.scrollHeight;
-              }
-            } catch(e) {}
+      const renderBatch = (items) => {
+        if (!items || items.length === 0) return;
+        items.forEach(msg => {
+          const msgTime = msg.created_at ? new Date(msg.created_at).getTime() : Date.now();
+          if (msgTime > lastRenderedTime) {
+            renderMessageCardSDK(msg, currentRound);
+            currentRound = parseInt(msg.round_number, 10);
+            lastRenderedTime = msgTime;
+            const feedView = document.getElementById('view-feed');
+            feedView.scrollTop = feedView.scrollHeight;
           }
-        },
-        onError: (err) => console.error("watchChanges error", err)
-      });
+        });
+      };
       
-      // Load initial
-      client.records.list("debate_messages", {
-        filter: [{ field: "session_id", op: "eq", value: sessionId }],
-        sort: [{ field: "created_at", direction: "asc" }],
-        limit: 100
-      }).then(resp => {
-        if (resp.items) {
-          resp.items.forEach(msg => {
-            renderMessageCard(msg, currentRound);
-            currentRound = msg.round_number;
+      const loadExisting = async () => {
+        try {
+          const resp = await client.records.list("debate_messages", {
+            filter: [{ field: "session_id", op: "eq", value: sessionId }],
+            sort: [{ field: "created_at", direction: "asc" }],
+            limit: 100
           });
-          const feedView = document.getElementById('view-feed');
-          feedView.scrollTop = feedView.scrollHeight;
+          if (resp.items) renderBatch(resp.items);
+        } catch (err) {
+          console.error("Initial load error:", err);
         }
-      });
+      };
+      
+      try {
+        const wsHandle = client.datastore.watchChanges({
+          table: "debate_messages",
+          onChange: (frame) => {
+            if (activeSessionId !== sessionId) return;
+            if (frame.operation === 'INSERT' || frame.operation === 'create') {
+              client.records.get("debate_messages", frame.record_id).then(msg => {
+                if (msg.session_id !== sessionId) return;
+                renderBatch([msg]);
+              }).catch(() => {});
+            }
+          },
+          onError: () => {
+            startPollFallback();
+          }
+        });
+        feedSubscription = wsHandle;
+        loadExisting();
+      } catch (e) {
+        startPollFallback();
+      }
+      
+      function startPollFallback() {
+        if (pollTimer) return;
+        loadExisting();
+        const poll = async () => {
+          if (activeSessionId !== sessionId) return;
+          try {
+            const resp = await client.records.list("debate_messages", {
+              filter: [{ field: "session_id", op: "eq", value: sessionId }],
+              sort: [{ field: "created_at", direction: "asc" }],
+              limit: 100
+            });
+            if (resp.items) renderBatch(resp.items);
+          } catch (err) {
+            console.error("Poll error:", err);
+          }
+          pollTimer = setTimeout(poll, 3000);
+        };
+        pollTimer = setTimeout(poll, 1000);
+        feedSubscription = { close: () => { clearTimeout(pollTimer); pollTimer = null; } };
+      }
     }
 
-    function renderMessageCard(msg, currentRound) {
+    function renderMessageCardSDK(msg, currentRound) {
       const emptyState = document.getElementById('feed-empty');
       if (emptyState) emptyState.remove();
-      if (currentRound !== msg.round_number) {
+      
+      const msgRound = parseInt(msg.round_number, 10);
+      if (currentRound !== msgRound) {
         const div = document.createElement('div');
         div.className = 'round-divider';
-        div.textContent = msg.round_number === 0 ? 'Phase: Pre-Mortem' : `Debate Round ${msg.round_number}`;
+        div.textContent = msgRound === 0 ? 'Phase: Pre-Mortem' : `Debate Round ${msgRound}`;
         feedContainer.appendChild(div);
       }
       
-      const posClass = msg.round_number === 0 ? 'pos-PREMORTEM' : `pos-${msg.position}`;
-      const posLabel = msg.round_number === 0 ? 'PRE-MORTEM' : msg.position;
+      const posClass = msgRound === 0 ? 'pos-PREMORTEM' : `pos-${msg.position || 'ABSTAIN'}`;
+      const posLabel = msgRound === 0 ? 'PRE-MORTEM' : (msg.position || 'ABSTAIN');
       
       const card = document.createElement('div');
       card.className = `message-card ${posClass}`;
@@ -800,13 +2957,12 @@
             
             if (session.status === 'hitl') {
               document.getElementById('hitl-form-container').style.display = 'block';
-              tabs[1].click(); // Auto-switch to verdict tab on HITL
-              // Find the active workflow run for form submission
-              findWorkflowRun(sessionId);
+              tabs[2].click(); // Switch to verdict dashboard
+              await findWorkflowRun(sessionId);
             }
           }
           
-          if (session.status !== 'done' && session.status !== 'hitl') {
+          if (session.status !== 'done' && session.status !== 'hitl' && session.status !== 'failed') {
             sessionSubscription = setTimeout(pollSession, 3000);
           }
         } catch (err) {
@@ -815,191 +2971,8 @@
       };
       pollSession();
     }
-    
-    async function findWorkflowRun(sessionId) {
-      try {
-        const podId = client.podId;
-        // List recent runs for the debate-pipeline workflow
-        const listResp = await client.request('GET', `/pods/${podId}/workflows/debate-pipeline/runs`);
-        const waitingRuns = (listResp?.items || []).filter(run => run.status === 'WAITING');
-        // Fetch full details for each WAITING run to match execution_context
-        for (const summary of waitingRuns) {
-          const detailResp = await client.request('GET', `/pods/${podId}/workflow-runs/${summary.id}`);
-          const ctx = detailResp?.execution_context || {};
-          if (JSON.stringify(ctx).includes(sessionId)) {
-            currentWorkflowRunId = detailResp.id;
-            formNodeId = detailResp.active_wait?.node_id || 'hitl_approval';
-            break;
-          }
-        }
-      } catch (err) {
-        console.warn('Could not find workflow run:', err);
-      }
-    }
 
-    async function loadVerdict(sessionId) {
-      try {
-        const resp = await client.records.list("verdicts", {
-          filter: [{ field: "session_id", op: "eq", value: sessionId }]
-        });
-        
-        if (!resp.items || resp.items.length === 0) {
-          document.getElementById('verdict-empty').style.display = 'flex';
-          document.getElementById('verdict-container').style.display = 'none';
-          return;
-        }
-        
-        document.getElementById('verdict-empty').style.display = 'none';
-        document.getElementById('verdict-container').style.display = 'grid';
-        
-        const v = resp.items[0];
-        
-        // Verdict Header
-        const vText = document.getElementById('vd-verdict-text');
-        vText.textContent = v.verdict;
-        vText.className = `verdict-large v-${v.verdict}`;
-        document.getElementById('vd-reason').textContent = v.recommended_action || "Verdict reached by council deliberation.";
-        
-        // Confidence Gauge
-        const cScore = v.confidence_score || 0;
-        const pct = Math.round(cScore * 100);
-        document.getElementById('vd-confidence-text').textContent = `${pct}%`;
-        
-        const gaugeFill = document.getElementById('vd-gauge-fill');
-        const dashOffset = 314 - (314 * cScore);
-        gaugeFill.style.strokeDasharray = `${314 - dashOffset} 314`;
-        
-        let cColor = '#ef4444';
-        let cLabel = 'Low Confidence';
-        if (cScore >= 0.8) { cColor = '#10b981'; cLabel = 'High Confidence'; }
-        else if (cScore >= 0.6) { cColor = '#f59e0b'; cLabel = 'Moderate Confidence'; }
-        
-        gaugeFill.style.stroke = cColor;
-        document.getElementById('vd-confidence-label').textContent = cLabel;
-        
-        // Agent Votes Breakdown
-        let forAgents = [], againstAgents = [], abstainAgents = [], reframeAgents = [];
-        try { forAgents = typeof v.council_vote_for === 'string' ? JSON.parse(v.council_vote_for) : (v.council_vote_for || []); } catch(e){}
-        try { againstAgents = typeof v.council_vote_against === 'string' ? JSON.parse(v.council_vote_against) : (v.council_vote_against || []); } catch(e){}
-        try { abstainAgents = typeof v.council_vote_abstain === 'string' ? JSON.parse(v.council_vote_abstain) : (v.council_vote_abstain || []); } catch(e){}
-        try { reframeAgents = typeof v.council_vote_reframe === 'string' ? JSON.parse(v.council_vote_reframe) : (v.council_vote_reframe || []); } catch(e){}
-        
-        const totalVotes = forAgents.length + againstAgents.length + abstainAgents.length + reframeAgents.length;
-        if (totalVotes > 0) {
-          const forPct = Math.round((forAgents.length / totalVotes) * 100);
-          const againstPct = Math.round((againstAgents.length / totalVotes) * 100);
-          const reframePct = Math.round((reframeAgents.length / totalVotes) * 100);
-          const forSeg = document.querySelector('.seg-for');
-          const againstSeg = document.querySelector('.seg-against');
-          if (forSeg) forSeg.style.width = `${forPct}%`;
-          if (againstSeg) againstSeg.style.width = `${againstPct}%`;
-          if (reframeAgents.length > 0) {
-            const bar = document.getElementById('vd-vote-bar');
-            const seg = document.createElement('div');
-            seg.className = 'vote-segment';
-            seg.style.cssText = `width:${reframePct}%;background:linear-gradient(90deg,#2563eb,#3b82f6);`;
-            seg.textContent = `${reframeAgents.length} REFRAME`;
-            bar.appendChild(seg);
-          }
-        }
-
-        const votesContainer = document.getElementById('vd-agent-votes');
-        votesContainer.innerHTML = '';
-        const addVote = (agent, pos) => {
-          let posColor = pos === 'FOR' ? 'var(--for-color)' : (pos === 'AGAINST' ? 'var(--against-color)' : (pos === 'REFRAME' ? 'var(--reframe-color)' : 'var(--text-muted)'));
-          let icon = pos === 'FOR' ? 'check' : (pos === 'AGAINST' ? 'x' : (pos === 'REFRAME' ? 'git-branch' : 'minus'));
-          votesContainer.innerHTML += `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
-              <span>${formatAgentName(agent)}</span>
-              <span style="color: ${posColor}; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px;">
-                <i data-lucide="${icon}" class="icon-sm"></i> ${pos}
-              </span>
-            </div>
-          `;
-        };
-        forAgents.forEach(a => addVote(a, 'FOR'));
-        againstAgents.forEach(a => addVote(a, 'AGAINST'));
-        reframeAgents.forEach(a => addVote(a, 'REFRAME'));
-        abstainAgents.forEach(a => addVote(a, 'ABSTAIN'));
-        
-        // Conflict Report
-        if (v.conflict_report) {
-          let cr = typeof v.conflict_report === 'string' ? JSON.parse(v.conflict_report) : v.conflict_report;
-          document.getElementById('vd-user-goal').textContent = cr.user_goal || 'N/A';
-          document.getElementById('vd-council-finding').textContent = cr.council_finding || 'N/A';
-          
-          const alert = document.getElementById('vd-divergence-alert');
-          const alertText = document.getElementById('vd-div-text');
-          if (cr.divergence_severity === 'HIGH') {
-            alert.className = 'divergence-alert div-high';
-            alertText.textContent = 'High Divergence: Council contradicts user goal';
-            document.getElementById('vd-div-icon').setAttribute('data-lucide', 'alert-circle');
-          } else {
-            alert.className = 'divergence-alert div-low';
-            alertText.textContent = 'Low Divergence: Council aligns with user goal';
-            document.getElementById('vd-div-icon').setAttribute('data-lucide', 'check-circle');
-          }
-        }
-        
-        // HITL Context
-        if (v.hitl_required) {
-          document.getElementById('hitl-reason-text').textContent = v.hitl_reason || "Escalation thresholds met.";
-        }
-        
-        lucide.createIcons();
-      } catch (err) {
-        console.error("Error loading verdict:", err);
-      }
-    }
-
-    async function submitHitlDecision() {
-      const btn = document.getElementById('hitl-submit-btn');
-      const decision = document.querySelector('input[name="hitl_decision"]:checked').value;
-      const reason = document.getElementById('hitl-reason-input').value;
-      
-      btn.disabled = true;
-      btn.innerHTML = 'Submitting... <i data-lucide="loader" class="icon-sm"></i>';
-      lucide.createIcons({root: btn});
-      
-      try {
-        if (currentWorkflowRunId) {
-          // Submit form to the workflow — this triggers process_hitl (panchai-brain)
-          const podId = client.podId;
-          await client.request('POST', `/pods/${podId}/workflow-runs/${currentWorkflowRunId}/form`, {
-            body: {
-              node_id: formNodeId || 'hitl_approval',
-              inputs: { decision, decision_reason: reason }
-            }
-          });
-        } else {
-          // Fallback: write directly to DB if no workflow run found
-          await client.records.create("hitl_queue", {
-            session_id: activeSessionId,
-            status: "resolved",
-            decision: decision,
-            decision_reason: reason
-          });
-          await client.records.update("debate_sessions", activeSessionId, {
-            status: decision === 'send_back' ? 'debating' : 'done'
-          });
-        }
-        
-        document.getElementById('hitl-form-container').innerHTML = `
-          <div style="text-align: center; padding: 20px;">
-            <i data-lucide="check-circle" style="color: var(--for-color); width: 48px; height: 48px; margin-bottom: 16px;"></i>
-            <h3>Decision Recorded</h3>
-            <p style="color: var(--text-muted); margin-top: 8px;">The pipeline will now process your decision.</p>
-          </div>
-        `;
-        lucide.createIcons();
-        
-      } catch (err) {
-        console.error("Error submitting HITL:", err);
-        btn.disabled = false;
-        btn.innerHTML = 'Error. Try Again';
-      }
-    }
-
+    // ─── Intake Form and Modal Handlers ───
     function showIntakeModal() {
       document.getElementById('intake-modal').classList.add('show');
       lucide.createIcons({root: document.getElementById('intake-modal')});
@@ -1007,14 +2980,12 @@
 
     function hideIntakeModal() {
       document.getElementById('intake-modal').classList.remove('show');
-      document.getElementById('intake-submit-btn').disabled = false;
-      document.getElementById('intake-submit-btn').innerHTML = 'Start Deliberation <i data-lucide="arrow-right" class="icon-sm"></i>';
     }
 
     async function submitIntake() {
       const taskInput = document.getElementById('intake-task').value.trim();
       const clientId = document.getElementById('intake-client').value.trim();
-      const taskContext = document.getElementById('intake-context').value.trim();
+      const stakesLevel = document.getElementById('intake-stakes').value;
 
       if (!taskInput) {
         document.getElementById('intake-task').focus();
@@ -1023,34 +2994,98 @@
 
       const btn = document.getElementById('intake-submit-btn');
       btn.disabled = true;
-      btn.innerHTML = 'Starting... <i data-lucide="loader" class="icon-sm"></i>';
+      btn.innerHTML = 'Assembling Council... <i data-lucide="loader" class="icon-sm"></i>';
       lucide.createIcons({root: btn});
 
+      if (!lemmaConnected) {
+        // Simulation mode session spawn
+        setTimeout(() => {
+          const newSessionId = `sim-custom-${Date.now()}`;
+          const newSession = {
+            id: newSessionId,
+            client_id: clientId || 'demo',
+            task_input: taskInput,
+            user_goal: "Evaluate prompt input",
+            stripped_task: `Raw prompt evaluated: ${taskInput}`,
+            stakes_level: stakesLevel,
+            status: 'pending'
+          };
+          
+          // Generate mock messages for custom task
+          simMessages[newSessionId] = [
+            { round_number: 0, agent_name: "policy-analyst", reasoning_bias: "rule-following", position: "PREMORTEM", argument: `Pre-Mortem Analysis: Evaluating request "${taskInput}". A failure will occur if standard constraints are ignored without documenting exception rules.` },
+            { round_number: 0, agent_name: "customer-advocate", reasoning_bias: "empathetic", position: "PREMORTEM", argument: "Pre-Mortem Analysis: A failure will occur if we override user preferences, degrading company metrics." },
+            { round_number: 1, agent_name: "customer-advocate", reasoning_bias: "empathetic", position: "FOR", argument: "I vote FOR accommodating this custom request. We should prioritize resolving the customer issue directly." },
+            { round_number: 1, agent_name: "policy-analyst", reasoning_bias: "rule-following", position: "AGAINST", argument: "I vote AGAINST. Standard rules state we must verify all criteria before taking action." },
+            { round_number: 1, agent_name: "panchai-brain", reasoning_bias: "Moderator", position: "MODERATOR", argument: "Moderator Challenge: The council has an active conflict. Policy analyst demands verification, customer advocate demands immediate approval. Let's find common ground." },
+            { round_number: 2, agent_name: "policy-analyst", reasoning_bias: "rule-following", position: "REFRAME", argument: "I REFRAME: I agree to approve if the customer passes a secondary security identity check." },
+            { round_number: 2, agent_name: "customer-advocate", reasoning_bias: "empathetic", position: "FOR", argument: "I accept the security check. That bridges our concerns." }
+          ];
+
+          simVerdicts[newSessionId] = {
+            session_id: newSessionId,
+            verdict: "APPROVED",
+            confidence_score: 0.81,
+            council_vote_for: ["customer-advocate", "policy-analyst"],
+            council_vote_against: [],
+            council_vote_abstain: [],
+            council_vote_reframe: [],
+            conflict_report: {
+              user_goal: "Execute user request",
+              council_finding: "Approved conditional on standard security verification check.",
+              divergence_severity: "LOW"
+            },
+            recommended_action: "Proceed with approval once identity check confirms tenant ownership.",
+            hitl_required: false,
+            hitl_reason: "High confidence consensus reached."
+          };
+
+          simSessions.unshift(newSession); // Add to start of list
+          loadSimSessionsDropdown();
+          
+          hideIntakeModal();
+          document.getElementById('intake-task').value = '';
+          
+          // Set active and run simulation
+          sessionSelect.value = newSessionId;
+          setActiveSession(newSessionId);
+          
+          // Switch to feed tab
+          document.getElementById('tab-feed').click();
+          
+        }, 1000);
+        return;
+      }
+
+      // SDK Mode
       try {
         const podId = client.podId;
-
-        await client.records.create("debate_sessions", {
+        const res = await client.records.create("debate_sessions", {
           task_input: taskInput,
           client_id: clientId || 'anonymous',
-          task_context: taskContext || '{}',
+          stakes_level: stakesLevel,
           status: 'pending'
         });
 
         hideIntakeModal();
         document.getElementById('intake-task').value = '';
-        document.getElementById('intake-context').value = '';
         await loadSessions();
 
+        // Select the newly spawned session
+        sessionSelect.value = res.id;
+        setActiveSession(res.id);
+        
+        document.getElementById('tab-feed').click();
       } catch (err) {
-        console.error('Error starting session:', err);
+        console.error('Error starting session in live mode:', err);
         btn.disabled = false;
-        btn.innerHTML = 'Start Deliberation <i data-lucide="arrow-right" class="icon-sm"></i>';
+        btn.innerHTML = 'Start Deliberation <i data-lucide="arrow-right"></i>';
         lucide.createIcons({root: btn});
-        alert('Failed to start session: ' + (err.message || 'Unknown error'));
+        alert('Failed to initiate live deliberation: ' + (err.message || 'Unknown error'));
       }
     }
 
-    // Utils
+    // ─── Helpers ───
     function formatAgentName(id) {
       if (!id) return "Agent";
       return id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -1060,52 +3095,17 @@
       return (unsafe||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-    // Start
-    initApp();
-
-  </script>
-
-  <!-- Intake Modal -->
-  <div id="intake-modal" class="modal-overlay">
-    <div class="modal">
-      <div class="modal-header">
-        <i data-lucide="scale" style="width: 28px; height: 28px;"></i>
-        <h2>New Deliberation Session</h2>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="intake-task">Task / Prompt</label>
-          <textarea id="intake-task" placeholder="Describe the task or question for deliberation..."></textarea>
-        </div>
-        <div class="form-group">
-          <label for="intake-client">Client ID</label>
-          <input id="intake-client" type="text" placeholder="e.g. acme-corp" value="demo" />
-        </div>
-        <div class="form-group">
-          <label for="intake-context">Custom Instructions / Context (JSON)</label>
-          <textarea id="intake-context" placeholder='{"instructions": "Consider ethical implications", "custom_prompt": "..."}'></textarea>
-          <div class="form-hint">Optional. Provide additional instructions or context for the deliberation.</div>
-        </div>
-        <div class="form-group" style="margin-top: 16px; padding: 10px; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.15); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted); line-height: 1.4;">
-          <strong>Note:</strong> YesMadam and Binocs scenarios represent scaled-down models of high-value compliance/governance workflows designed to demonstrate anti-sycophancy deliberation in real-time.
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-secondary" onclick="hideIntakeModal()">Cancel</button>
-        <button class="btn-primary" onclick="submitIntake()" id="intake-submit-btn">
-          Start Deliberation <i data-lucide="arrow-right" class="icon-sm"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-  <script>
+    // Close modals on overlay clicks
     document.getElementById('intake-modal').addEventListener('click', function(e) {
       if (e.target === this) hideIntakeModal();
     });
+    
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') hideIntakeModal();
     });
-  </script>
 
+    // Start App
+    initApp();
+  </script>
 </body>
 </html>

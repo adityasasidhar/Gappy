@@ -1,6 +1,6 @@
 {
   "name": "pre-mortem-orchestrator",
-  "description": "Runs the pre-mortem phase: calls registry_lookup, creates debate_rounds and pre_mortems records for each council agent.",
+  "description": "Runs the passive pre-mortem phase by selecting council agents, creating separate real agent conversations, and writing pre_mortems plus live-feed debate_messages.",
   "instruction": { "$file": "instruction.md" },
   "toolsets": ["POD"],
   "visibility": "POD",
@@ -17,12 +17,11 @@
   },
   "permissions": {
     "grants": [
-      { "resource_type": "function", "resource_name": "registry_lookup", "permission_ids": ["function.read", "function.execute"] },
-      { "resource_type": "function", "resource_name": "run_council", "permission_ids": ["function.read", "function.execute"] },
-      { "resource_type": "function", "resource_name": "batch_write", "permission_ids": ["function.read", "function.execute"] },
       { "resource_type": "datastore_table", "resource_name": "agent_catalog", "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
       { "resource_type": "datastore_table", "resource_name": "debate_rounds", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
-      { "resource_type": "datastore_table", "resource_name": "pre_mortems", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
+      { "resource_type": "datastore_table", "resource_name": "pre_mortems", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+      { "resource_type": "datastore_table", "resource_name": "debate_messages", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
     ]
   }
 }
