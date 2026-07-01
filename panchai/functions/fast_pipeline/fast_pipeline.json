@@ -1,0 +1,6 @@
+{
+  "name": "fast_pipeline",
+  "description": "Runs the full deliberation pipeline via direct Ollama Cloud API. 3 parallel council agents, programmatic verdict. ~2-3s total.",
+  "type": "API",
+  "code": {"$file": "fast_pipeline.py"}
+}
