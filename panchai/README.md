@@ -181,7 +181,7 @@ Lemma Cloud's function sandbox provides **1 thread** — `asyncio.to_thread()` r
 - For HIGH stakes tasks, the council can be expanded to 3 via `registry_lookup`
 
 ### Why Ollama Cloud Fallback?
-Lemma Cloud's account-level LLM quota can be exhausted (HTTP 429). The fallback calls Ollama Cloud's OpenAI-compatible API directly via `httpx` — same models (`ministral-3:3b`), same persona prompts, same output format. The tribunal continues uninterrupted.
+Lemma Cloud's account-level LLM quota can be exhausted (HTTP 429). The fallback calls Ollama Cloud's OpenAI-compatible API directly via `urllib` (stdlib) — same models (`ministral-3:3b`), same persona prompts, same output format. The tribunal continues uninterrupted.
 
 ### Blind Tribunal Protocol
 `user_goal` is present in `fast_pipeline`'s input schema (for `conflict_report` dashboarding) but is **never included in any prompt sent to agents**. The code explicitly uses only `stripped_task` in `task_prompt`. This is PANCHAI's core anti-sycophancy guarantee.
@@ -234,7 +234,7 @@ Expected verdict: `REFRAMED` (partial order + renegotiated terms)
 
 | Constraint | Solution |
 |-----------|---------|
-| Lemma 429 LLM quota | Ollama Cloud API fallback via httpx |
+| Lemma 429 LLM quota | Ollama Cloud API fallback via urllib (stdlib) |
 | 300s sandbox kill | 260s time budget + 2-agent cap + 120s per-agent timeout |
 | asyncio.to_thread sequential | _call_agent_sync() called directly (no thread wrapper) |
 | No files.upload_content() | files.write_text() for archival |
@@ -246,6 +246,21 @@ Expected verdict: `REFRAMED` (partial order + renegotiated terms)
 ---
 
 ## Live Run Evidence
+
+### Verified Live Run (2026-07-01)
+
+```
+Task: "Should we approve a refund for a customer who bought the wrong subscription tier?"
+Council: policy-analyst + customer-advocate
+Runtime: 16.3 seconds (goal_strip 17.1s + fast_pipeline 16.3s = 33.4s total)
+
+policy-analyst:  AGAINST (0.95) — "violates documented policies"
+customer-advocate: FOR     (0.98) — "justified to address customer expectations"
+Verdict: ESCALATED (1-1 tie, hitl_required=True)
+Model: ministral-3:3b via direct Ollama Cloud API
+```
+
+Evidence written to `debate_sessions`, `debate_messages`, `debate_rounds`, `verdicts`, `hitl_queue`.
 
 The PANCHAI pipeline produces real AI deliberation records in these tables:
 
@@ -261,7 +276,7 @@ The PANCHAI pipeline produces real AI deliberation records in these tables:
 
 - **[Lemma](https://lemma.work)** — Agent runtime, Datastore, Files API, WebSocket live feed
 - **[Ollama Cloud](https://ollama.com)** — `ministral-3:3b` model for all council agents
-- **Python** (lemma-sdk, httpx, pydantic) — Pipeline functions
+- **Python** (lemma-sdk, urllib, pydantic) — Pipeline functions
 - **Vanilla JS + CSS** — Premium live UI (no framework, no build step)
 - **Inter / Outfit / JetBrains Mono** — Typography
 

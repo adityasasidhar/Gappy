@@ -26,6 +26,7 @@ class GoalStripInput(BaseModel):
     task_input: str
     session_id: Optional[str] = None
     client_id: Optional[str] = None
+    stakes_level: Optional[str] = None
     task_context: Optional[str] = None
 
 
@@ -320,12 +321,14 @@ async def goal_strip(ctx: FunctionContext, data: GoalStripInput) -> GoalStripOut
 
     if not session_id:
         session_id = str(uuid.uuid4())
+        stakes = data.stakes_level or _classify_stakes(task_input)
         try:
             pod.records.create("debate_sessions", RecordData(
                 id=session_id,
                 client_id=client_id,
                 task_input=task_input,
                 task_context=data.task_context or "",
+                stakes_level=stakes,
                 status="pending",
             ))
         except Exception:
@@ -343,7 +346,7 @@ async def goal_strip(ctx: FunctionContext, data: GoalStripInput) -> GoalStripOut
         )
 
     stripped_task, user_goal = _extract_goal_and_strip(task_input)
-    stakes_level = _classify_stakes(task_input)
+    stakes_level = data.stakes_level or _classify_stakes(task_input)
 
     # Update session with stripped info
     try:

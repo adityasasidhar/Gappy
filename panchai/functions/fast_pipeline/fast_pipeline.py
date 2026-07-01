@@ -27,7 +27,9 @@ import os
 import re
 import time
 import uuid
-import httpx
+import urllib.request
+import urllib.error
+import ssl
 from typing import List, Optional
 from pydantic import BaseModel
 from lemma_sdk import FunctionContext, Pod, RecordData
@@ -217,13 +219,9 @@ def _parse_json(text: str) -> dict:
 
 def _call_ollama(system_prompt: str, user_prompt: str) -> dict:
     """
-    Direct Ollama Cloud API call via httpx.
+    Direct Ollama Cloud API call via urllib (stdlib).
     Used when Lemma agent call is unavailable (e.g. 429 LLM quota on Lemma side).
     """
-    headers = {
-        "Authorization": f"Bearer {OLLAMA_API_KEY}",
-        "Content-Type": "application/json",
-    }
     body = {
         "model": OLLAMA_MODEL,
         "messages": [
@@ -233,14 +231,23 @@ def _call_ollama(system_prompt: str, user_prompt: str) -> dict:
         "temperature": 0.7,
         "max_tokens": 800,
     }
+    payload = json.dumps(body).encode("utf-8")
+    req = urllib.request.Request(
+        OLLAMA_BASE_URL,
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {OLLAMA_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
     try:
-        resp = httpx.post(OLLAMA_BASE_URL, json=body, headers=headers, timeout=AGENT_TIMEOUT)
-        resp.raise_for_status()
-        data = resp.json()
+        ctx = ssl.create_default_context()
+        resp = urllib.request.urlopen(req, context=ctx, timeout=120)
+        data = json.loads(resp.read().decode("utf-8"))
         content = data["choices"][0]["message"]["content"]
         return _parse_json(content)
     except Exception as e:
-        # Return ABSTAIN on any failure so pipeline continues
         return {
             "position":    "ABSTAIN",
             "argument":    f"Agent unavailable: {type(e).__name__}",
@@ -257,7 +264,7 @@ def _call_agent_sync(pod: Pod, agent_id: str, system_prompt: str, user_prompt: s
     Falls back to direct Ollama Cloud call on any error (including 429 quota).
     """
     try:
-        # Extend httpx timeout to prevent 30s SSE cutoff
+        # Extend transport timeout to prevent 30s SSE cutoff
         try:
             pod._transport.generated._timeout = AGENT_TIMEOUT + 30.0
         except Exception:
@@ -500,13 +507,8 @@ async def fast_pipeline(ctx: FunctionContext, data: FastPipelineInput) -> FastPi
         if memory_ctx:
             task_prompt += f"\n\n[Institutional Memory — relevant past verdicts]:\n{memory_ctx}"
 
-        # ── Round 0: Pre-Mortem Phase ─────────────────────────────────────────
-        _safe_create(pod, "debate_rounds", {
-            "session_id":   session_id,
-            "round_number": 0,
-            "round_type":   "pre_mortem",
-            "status":       "active",
-        })
+        # ── Round 0: Pre-Mortem Phase (created complete after agents respond) ──
+        pm_round_id = str(uuid.uuid4())
         _safe_update(pod, "debate_sessions", session_id, {"status": "pre_mortem"})
 
         # ── Round 1: Debate Phase ─────────────────────────────────────────────
@@ -539,15 +541,13 @@ async def fast_pipeline(ctx: FunctionContext, data: FastPipelineInput) -> FastPi
             })
 
         # ── Persist Pre-Mortem records ────────────────────────────────────────
-        _safe_update(pod, "debate_rounds", session_id, {"status": "complete"})  # won't match but harmless
         _safe_create(pod, "debate_rounds", {
+            "id":           pm_round_id,
             "session_id":   session_id,
             "round_number": 0,
             "round_type":   "pre_mortem",
             "status":       "complete",
         })
-
-        pm_round_ref = round1_id + "-pm"
         for r in r1_responses:
             meta        = agent_meta.get(r["agent_id"], {})
             arg_preview = r["argument"][:300]
@@ -555,7 +555,7 @@ async def fast_pipeline(ctx: FunctionContext, data: FastPipelineInput) -> FastPi
             # Pre-mortem debate_messages
             _safe_create(pod, "debate_messages", {
                 "session_id":    session_id,
-                "round_id":      pm_round_ref,
+                "round_id":      pm_round_id,
                 "agent_id":      r["agent_id"],
                 "agent_name":    meta.get("name", r["agent_id"]),
                 "position":      "ABSTAIN",
@@ -570,7 +570,7 @@ async def fast_pipeline(ctx: FunctionContext, data: FastPipelineInput) -> FastPi
             # pre_mortems table
             _safe_create(pod, "pre_mortems", {
                 "session_id":       session_id,
-                "round_id":         pm_round_ref,
+                "round_id":         pm_round_id,
                 "agent_id":         r["agent_id"],
                 "failure_reason":   arg_preview or "No specific risks identified.",
                 "weak_assumption":  "Key assumption may be invalid under adversarial review.",
@@ -580,6 +580,7 @@ async def fast_pipeline(ctx: FunctionContext, data: FastPipelineInput) -> FastPi
 
         # ── Persist Round 1 Debate records ───────────────────────────────────
         _safe_create(pod, "debate_rounds", {
+            "id":           round1_id,
             "session_id":   session_id,
             "round_number": 1,
             "round_type":   "debate",

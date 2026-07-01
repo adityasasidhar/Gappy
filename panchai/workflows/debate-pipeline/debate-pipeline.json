@@ -16,7 +16,9 @@
           "required": ["task_input"],
           "properties": {
             "task_input": { "type": "string", "title": "Task", "description": "The task or question to deliberate" },
-            "task_context": { "type": "string", "title": "Context (JSON)", "description": "Optional JSON context (e.g. customer info)" }
+            "task_context": { "type": "string", "title": "Context (JSON)", "description": "Optional JSON context (e.g. customer info)" },
+            "client_id": { "type": "string", "title": "Client ID", "description": "e.g. yesmadam, binocs" },
+            "stakes_level": { "type": "string", "title": "Stakes Level", "enum": ["STANDARD", "HIGH"] }
           }
         }
       }
@@ -29,7 +31,9 @@
         "function_name": "goal_strip",
         "input_mapping": {
           "task_input": { "type": "expression", "value": "input_form.task_input" },
-          "task_context": { "type": "expression", "value": "input_form.task_context" }
+          "task_context": { "type": "expression", "value": "input_form.task_context" },
+          "client_id": { "type": "expression", "value": "input_form.client_id" },
+          "stakes_level": { "type": "expression", "value": "input_form.stakes_level" }
         }
       }
     },
@@ -55,7 +59,7 @@
       "label": "HITL Required?",
       "config": {
         "rules": [
-          { "condition": "deliberation.verdict.hitl_required == `true`", "next_node_id": "hitl_approval" }
+          { "condition": "deliberation.verdict.hitl_required == true", "next_node_id": "hitl_approval" }
         ]
       }
     },
@@ -81,8 +85,7 @@
       "config": {
         "agent_name": "panchai-brain",
         "input_mapping": {
-          "session_id": { "type": "expression", "value": "goal_stripper.session_id" },
-          "hitl_queue_id": { "type": "expression", "value": "deliberation.council_responses[0].agent_id" },
+          "session_id": { "type": "expression", "value": "deliberation.session_id" },
           "decision": { "type": "expression", "value": "hitl_approval.decision" },
           "decision_reason": { "type": "expression", "value": "hitl_approval.decision_reason" },
           "verdict": { "type": "expression", "value": "deliberation.verdict.verdict" },

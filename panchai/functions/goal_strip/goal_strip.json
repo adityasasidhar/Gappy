@@ -5,7 +5,7 @@
   "code": {"$file": "goal_strip.py"},
   "permissions": {
     "grants": [
-      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
+      { "resource_type": "datastore_table", "resource_name": "debate_sessions", "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write", "datastore.record.create"] }
     ]
   }
 }

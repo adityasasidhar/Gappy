@@ -1883,7 +1883,8 @@
     const lemmaConfig = window.__LEMMA_CONFIG__ || {};
     const client = window.LemmaClient?.LemmaClient
       ? new window.LemmaClient.LemmaClient({
-          apiUrl: lemmaConfig.apiUrl || window.__LEMMA_BASE_URL__ || 'https://api.lemma.work'
+          apiUrl: lemmaConfig.apiUrl || window.__LEMMA_BASE_URL__ || 'https://api.lemma.work',
+          timeoutMs: 120000
         })
       : null;
     if (client && !client.podId) {
@@ -2625,7 +2626,7 @@
     async function loadVerdict(sessionId) {
       try {
         const resp = await client.records.list("verdicts", {
-          filter: [{ field: "session_id", op: "eq", value: sessionId }]
+          filters: [{ field: "session_id", op: "eq", value: sessionId }]
         });
         
         if (!resp.items || resp.items.length === 0) {
@@ -2836,6 +2837,7 @@
       const renderedMessageIds = new Set();
       let currentRound = -1;
       let pollTimer = null;
+      let wsHandle = null;
       
       const renderBatch = (items) => {
         if (!items || items.length === 0) return;
@@ -2861,58 +2863,76 @@
       const loadExisting = async () => {
         try {
           const resp = await client.records.list("debate_messages", {
-            filter: [{ field: "session_id", op: "eq", value: sessionId }],
+            filters: [{ field: "session_id", op: "eq", value: sessionId }],
             sort: [{ field: "created_at", direction: "asc" }],
             limit: 100
           });
-          if (resp.items) renderBatch(resp.items);
+          if (resp.items) {
+            // Also filter on the client side just to be safe
+            const sessionItems = resp.items.filter(item => item.session_id === sessionId);
+            renderBatch(sessionItems);
+          }
         } catch (err) {
           console.error("Initial load error:", err);
         }
       };
       
       try {
-        const wsHandle = client.datastore.watchChanges({
+        wsHandle = client.datastore.watchChanges({
           table: "debate_messages",
           onChange: (frame) => {
             if (activeSessionId !== sessionId) return;
-            if (frame.operation === 'INSERT' || frame.operation === 'create') {
+            const op = (frame.operation || frame.type || '').toLowerCase();
+            if (op === 'insert' || op === 'create') {
               client.records.get("debate_messages", frame.record_id).then(msg => {
                 if (msg.session_id !== sessionId) return;
                 renderBatch([msg]);
               }).catch(() => {});
             }
-          },
-          onError: () => {
-            startPollFallback();
           }
         });
-        feedSubscription = wsHandle;
-        loadExisting();
       } catch (e) {
-        startPollFallback();
+        console.warn("datastore.watchChanges initialization failed:", e);
       }
+
+      // Always launch safe polling loop in parallel to guarantee updates
+      loadExisting();
+      startPollLoop();
       
-      function startPollFallback() {
+      function startPollLoop() {
         if (pollTimer) return;
-        loadExisting();
         const poll = async () => {
           if (activeSessionId !== sessionId) return;
           try {
             const resp = await client.records.list("debate_messages", {
-              filter: [{ field: "session_id", op: "eq", value: sessionId }],
+              filters: [{ field: "session_id", op: "eq", value: sessionId }],
               sort: [{ field: "created_at", direction: "asc" }],
               limit: 100
             });
-            if (resp.items) renderBatch(resp.items);
+            if (resp.items) {
+              const sessionItems = resp.items.filter(item => item.session_id === sessionId);
+              renderBatch(sessionItems);
+            }
           } catch (err) {
             console.error("Poll error:", err);
           }
-          pollTimer = setTimeout(poll, 3000);
+          pollTimer = setTimeout(poll, 2500);
         };
-        pollTimer = setTimeout(poll, 1000);
-        feedSubscription = { close: () => { clearTimeout(pollTimer); pollTimer = null; } };
+        pollTimer = setTimeout(poll, 1500);
       }
+
+      // Return combined handle
+      feedSubscription = {
+        close: () => {
+          if (wsHandle && wsHandle.close) {
+            try { wsHandle.close(); } catch(e) {}
+          }
+          if (pollTimer) {
+            clearTimeout(pollTimer);
+            pollTimer = null;
+          }
+        }
+      };
     }
 
 
@@ -3068,20 +3088,47 @@
       // SDK Mode
       try {
         const podId = client.podId;
-        const res = await client.records.create("debate_sessions", {
-          task_input: taskInput,
-          client_id: clientId || 'anonymous',
-          stakes_level: stakesLevel,
-          status: 'pending'
-        });
+        
+        // 1. Create a run of the debate-pipeline workflow
+        const runRes = await client.workflows.runs.create("debate-pipeline");
+        const runId = runRes.id;
+        
+        // 2. Submit the form inputs to start execution of the workflow
+        try {
+          const formInputs = { task_input: taskInput, task_context: "{}" };
+          if (clientId) formInputs.client_id = clientId;
+          formInputs.stakes_level = stakesLevel;
+          await client.workflows.runs.submitForm(runId, {
+            node_id: "input_form",
+            inputs: formInputs
+          });
+        } catch (submitErr) {
+          console.warn("submitForm returned or timed out (will attempt to poll session anyway):", submitErr);
+        }
+
+        // 3. Poll for the session ID created by goal_strip
+        let newSession = null;
+        for (let i = 0; i < 30; i++) {
+          await new Promise(r => setTimeout(r, 500));
+          const list = await client.records.list("debate_sessions", {
+            sort: [{ field: "created_at", direction: "desc" }],
+            limit: 5
+          });
+          newSession = (list.items || []).find(s => s.task_input === taskInput);
+          if (newSession) break;
+        }
+
+        if (!newSession) {
+          throw new Error("Deliberation started, but session record was not found in the database. Please select it from the dropdown.");
+        }
 
         hideIntakeModal();
         document.getElementById('intake-task').value = '';
         await loadSessions();
 
         // Select the newly spawned session
-        sessionSelect.value = res.id;
-        setActiveSession(res.id);
+        sessionSelect.value = newSession.id;
+        setActiveSession(newSession.id);
         
         document.getElementById('tab-feed').click();
       } catch (err) {
