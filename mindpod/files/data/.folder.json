@@ -1,4 +1,0 @@
-{
-  "description": "User-uploaded structured data: CSV files for analysis. Data agent reads from here.",
-  "visibility": "POD"
-}

@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANCHAI - The Institutional Antidote to AI Overconfidence</title>
+    <meta name="description" content="A universal multi-agent council engine for enterprises built on Lemma SDK.">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg: #f9fafb;
+            --surface: #f3f4f6;
+            --surface-card: #ffffff;
+            --border: rgba(0, 0, 0, 0.08);
+            --border-hover: rgba(0, 0, 0, 0.15);
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --accent: #e11d48;
+            --accent-glow: rgba(225, 29, 72, 0.1);
+            --brand: #d97706;
+            --brand-glow: rgba(217, 119, 6, 0.1);
+            --success: #059669;
+            --success-glow: rgba(5, 150, 105, 0.1);
+            --danger: #dc2626;
+            --info: #2563eb;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(225, 29, 72, 0.02) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(217, 119, 6, 0.02) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.01) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Nav */
+        header {
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(249, 250, 251, 0.8);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 0;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span {
+            color: var(--brand);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 7rem 0 4rem;
+            text-align: center;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        .hero-pill {
+            display: inline-block;
+            background: rgba(225, 29, 72, 0.08);
+            color: var(--accent);
+            padding: 0.5rem 1.25rem;
+            border-radius: 99px;
+            border: 1px solid rgba(225, 29, 72, 0.15);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -2px;
+            color: #0f172a;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: var(--brand);
+            background: linear-gradient(to right, #d97706, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .btn-brand {
+            background-color: var(--brand);
+            color: #ffffff;
+            box-shadow: 0 4px 20px rgba(217, 119, 6, 0.2);
+        }
+
+        .btn-brand:hover {
+            background-color: #b45309;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border-color: var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            border-color: var(--text-secondary);
+        }
+
+        /* Section Layouts */
+        .section {
+            padding: 6rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-tag {
+            color: var(--brand);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+            color: #0f172a;
+        }
+
+        .section-desc {
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin: 4rem 0;
+            padding-top: 4rem;
+            border-top: 1px solid var(--border);
+            text-align: left;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-family: var(--font-mono);
+        }
+
+        .stat-number.highlight-stat {
+            color: var(--brand);
+        }
+
+        .stat-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #0f172a;
+        }
+
+        .stat-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* Visual Info Blocks (Grid) */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card:hover {
+            border-color: var(--brand);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        .info-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #0f172a;
+        }
+
+        .info-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Interactive Simulator Layout */
+        .simulator-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .simulator-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sidebar {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: fit-content;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .scenario-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .scenario-btn {
+            background: rgba(0, 0, 0, 0.01);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-primary);
+        }
+
+        .scenario-btn:hover {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: var(--border-hover);
+        }
+
+        .scenario-btn.active {
+            background: rgba(217, 119, 6, 0.06);
+            border-color: var(--brand);
+            box-shadow: 0 0 12px var(--brand-glow);
+        }
+
+        .scenario-btn h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .scenario-btn p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .sim-controls {
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Live Feed Card styling */
+        .live-feed-panel {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .live-feed-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .feed-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .feed-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.02);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .feed-title {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .pulse-dot {
+            width: 8px; height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-glow);
+            animation: pulse 1.5s infinite;
+        }
+
+        .pulse-dot.idle {
+            background: var(--text-secondary);
+            box-shadow: none;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        .feed-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: #fdfdfd;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            opacity: 0.4;
+        }
+
+        /* Message Nodes inside Simulation */
+        .msg-node {
+            display: flex;
+            gap: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-avatar {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .msg-body-wrapper {
+            flex: 1;
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+        }
+
+        .msg-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .node-role-badge {
+            background: rgba(0, 0, 0, 0.04);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .phase-badge {
+            align-self: center;
+            background: rgba(37, 99, 235, 0.06);
+            color: var(--info);
+            border: 1px solid rgba(37, 99, 235, 0.15);
+            padding: 0.35rem 1rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+            margin: 0.5rem 0;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        /* Right Panel Verdict Summary */
+        .verdict-side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .box-panel {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .verdict-header {
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.25rem;
+        }
+
+        .verdict-state {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-top: 0.25rem;
+        }
+
+        .verdict-state.pending { color: var(--info); }
+        .verdict-state.escalated { color: var(--danger); }
+        .verdict-state.reframed { color: var(--brand); }
+        .verdict-state.approved { color: var(--success); }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-lbl {
+            color: var(--text-secondary);
+        }
+
+        .stat-val {
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 9px;
+            overflow: hidden;
+            margin: 0.5rem 0 1.25rem;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--info);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .bar-fill.success { background: var(--success); }
+        .bar-fill.danger { background: var(--danger); }
+        .bar-fill.brand { background: var(--brand); }
+
+        /* HITL interactive panel */
+        .hitl-panel {
+            background: #fff5f5;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: none;
+            animation: pulse-border 2.5s infinite alternate;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: rgba(220, 38, 38, 0.2); }
+            100% { border-color: var(--brand); }
+        }
+
+        .hitl-title {
+            color: var(--brand);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hitl-option {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hitl-option:hover {
+            background: rgba(0,0,0,0.01);
+            border-color: var(--brand);
+        }
+
+        .hitl-option input {
+            cursor: pointer;
+        }
+
+        .info-bubble {
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px solid rgba(37, 99, 235, 0.1);
+            color: var(--info);
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        /* SVG Layout classes */
+        .visual-showcase-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        @media (max-width: 900px) {
+            .visual-showcase-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .overview-panel {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .overview-stat {
+            border-right: 1px solid var(--border);
+            padding-right: 1rem;
+        }
+
+        .overview-stat:last-child {
+            border-right: none;
+        }
+
+        .grid-main {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mapping-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .mapping-table th, .mapping-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mapping-table th {
+            color: var(--text-secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .mapping-table td strong {
+            color: var(--brand);
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 4rem 0;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            background: #ffffff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-bg"></div>
+
+    <header>
+        <div class="container nav-container">
+            <div class="logo">🏛️ <span>PANCHAI</span></div>
+            <div class="nav-links">
+                <a href="#landscape">Market Context</a>
+                <a href="#how-it-works">Deliberation System</a>
+                <a href="#ecosystem">Adoption Flow</a>
+                <a href="#personas">Adoption Scenarios</a>
+                <a href="#demo" class="btn btn-brand" style="color: #ffffff; padding: 0.5rem 1.25rem; font-size: 0.85rem; border-radius: 99px;">Run Live Demo</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Hero section -->
+        <section class="hero">
+            <div class="hero-pill">Gappy AI Hackathon 2026</div>
+            <h1>The Institutional Antidote to <br><span class="highlight">AI Overconfidence</span></h1>
+            <p>Every AI you use today is trained to tell you you're right. PANCHAI is a universal multi-agent council engine built to tell you when you're wrong before you execute catastrophic actions.</p>
+            <div class="btn-group">
+                <a href="#demo" class="btn btn-brand">Launch Live Simulation</a>
+                <a href="#landscape" class="btn btn-outline">Why the Future Needs PANCHAI</a>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number highlight-stat">40%</div>
+                    <div class="stat-title">Agentic Systems by 2026</div>
+                    <div class="stat-desc">Projected share of enterprise systems running on autonomous agent loops. PANCHAI establishes the safety standard for these loops.</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">$67.4B</div>
+                    <div class="stat-title">Lost to Hallucinations</div>
+                    <div class="stat-desc">Global enterprise losses due to confident but incorrect AI outputs validating incorrect user premises.</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">4.3 hrs</div>
+                    <div class="stat-title">Verification Overhead</div>
+                    <div class="stat-desc">Time spent per employee per week verifying AI outputs manually to prevent errors.</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">34%</div>
+                    <div class="stat-title">Sycophancy Bias</div>
+                    <div class="stat-desc">LLMs are structurally more likely to use highly confident language precisely when they are most wrong.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Market Landscape & The Problem -->
+        <section class="section" id="landscape">
+            <div class="section-header">
+                <span class="section-tag">Market Reality</span>
+                <h2 class="section-title">The Broken Agentic Loop</h2>
+                <p class="section-desc">By the end of 2026, 40% of enterprise systems are projected to be agentic. Unsupervised agent loops scale hallucinations into massive corporate liability.</p>
+            </div>
+
+            <div class="visual-showcase-grid">
+                <div>
+                    <h3 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 1.25rem; color: #0f172a;">Why autonomous agents fail today</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1.05rem;">
+                        Current agent architectures execute prompts blindly. They are optimized for user compliance—meaning they agree with flawed user instructions, bypass static compliance, and trigger bad outputs.
+                    </p>
+                    <div style="border-left: 3px solid var(--accent); padding-left: 1.5rem; margin-bottom: 1.5rem;">
+                        <h4 style="color: var(--accent); font-weight: 700;">Sycophancy Risk</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Ungoverned agents auto-approve parameters just because they were requested, generating compliance breaches.</p>
+                    </div>
+                </div>
+
+                <!-- SVG Process Comparison Diagram -->
+                <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 16px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                    <svg viewBox="0 0 500 320" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Red Line: Unchecked Loop -->
+                        <text x="20" y="30" font-family="'Outfit', sans-serif" font-size="11" font-weight="800" fill="#dc2626">UNCHECKED SYSTEM (THE SYCOPHANTIC LOOP)</text>
+                        
+                        <rect x="20" y="55" width="130" height="50" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+                        <text x="85" y="85" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#991b1b" text-anchor="middle">User Goal</text>
+                        
+                        <path d="M 150 80 L 195 80" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arrow-red)"/>
+                        
+                        <rect x="205" y="55" width="130" height="50" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+                        <text x="270" y="85" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#991b1b" text-anchor="middle">Sycophant Agent</text>
+                        
+                        <path d="M 335 80 L 380 80" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arrow-red)"/>
+                        
+                        <rect x="390" y="55" width="90" height="50" rx="8" fill="#dc2626" opacity="0.1"/>
+                        <rect x="390" y="55" width="90" height="50" rx="8" fill="none" stroke="#dc2626" stroke-width="2"/>
+                        <text x="435" y="85" font-family="'Outfit', sans-serif" font-size="10" font-weight="800" fill="#dc2626" text-anchor="middle">LOSSES</text>
+
+                        <!-- Green Line: PANCHAI Firewall -->
+                        <text x="20" y="180" font-family="'Outfit', sans-serif" font-size="11" font-weight="800" fill="#059669">SAFE SYSTEM (PANCHAI DELIBERATION)</text>
+                        
+                        <rect x="20" y="205" width="130" height="50" rx="8" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+                        <text x="85" y="235" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">User Goal</text>
+                        
+                        <path d="M 150 230 L 195 230" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#arrow-green)"/>
+                        
+                        <rect x="205" y="205" width="130" height="50" rx="8" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+                        <text x="270" y="235" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">PANCHAI Council</text>
+                        
+                        <path d="M 335 230 L 380 230" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#arrow-green)"/>
+                        
+                        <rect x="390" y="205" width="90" height="50" rx="8" fill="#059669" opacity="0.1"/>
+                        <rect x="390" y="205" width="90" height="50" rx="8" fill="none" stroke="#059669" stroke-width="2"/>
+                        <text x="435" y="235" font-family="'Outfit', sans-serif" font-size="10" font-weight="800" fill="#059669" text-anchor="middle">VERDICT</text>
+
+                        <!-- Marker Definitions -->
+                        <defs>
+                            <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+                            </marker>
+                            <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Idea & Mechanics -->
+        <section class="section" id="how-it-works">
+            <div class="section-header">
+                <span class="section-tag">Architecture</span>
+                <h2 class="section-title">The Deliberation Firewall</h2>
+                <p class="section-desc">PANCHAI intercepts user goals, strips sychophantic premises, and builds a robust debating council of specialized agents.</p>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-icon">⚖️</div>
+                    <h3>Blind Tribunal Protocol</h3>
+                    <p>The core brain strips the desired business outcome from user requests. Agents evaluate raw facts independently with zero anchoring to user bias. Sycophancy becomes structurally impossible.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-icon">🧠</div>
+                    <h3>Pre-Mortem Forcing</h3>
+                    <p>Before arguing FOR success, agents must predict failure. Each agent anonymously submits critical failure points, aligning the council around systemic risk management from start.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-icon">👥</div>
+                    <h3>Active Moderation</h3>
+                    <p>Instead of basic cross-talk, the Core Brain isolates disagreements and prompts targeted round-by-round rebuttals, forcing agents to resolve conflicts or escalate to human review.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ecosystem Adoption Flow -->
+        <section class="section" id="ecosystem">
+            <div class="section-header">
+                <span class="section-tag">Integration Flow</span>
+                <h2 class="section-title">Zero API Refactoring Adoption</h2>
+                <p class="section-desc">Integrate PANCHAI as database middleware. Hook external pipelines instantly via automatic datastore triggers, or audit workflows manually using custom forms.</p>
+            </div>
+
+            <!-- SVG Ecosystem Integration Diagram -->
+            <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 20px; padding: 3rem 2rem; margin-bottom: 3rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <svg viewBox="0 0 1000 350" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Background Connection Lines -->
+                    <line x1="160" y1="175" x2="840" y2="175" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="5,5"/>
+
+                    <!-- 1A: Manual trigger -->
+                    <rect x="30" y="40" width="220" height="90" rx="12" fill="#fffbeb" stroke="var(--brand)" stroke-width="1.5"/>
+                    <text x="140" y="70" font-family="'Outfit', sans-serif" font-size="12" font-weight="800" fill="var(--brand)" text-anchor="middle">A. MANUAL TRIGGER</text>
+                    <text x="140" y="95" font-family="'Outfit', sans-serif" font-size="11" fill="var(--text-primary)" text-anchor="middle">Lemma Workflows UI Form</text>
+                    <text x="140" y="112" font-family="'Outfit', sans-serif" font-size="10" fill="var(--text-secondary)" text-anchor="middle">(Operator-facing Web panel)</text>
+
+                    <!-- 1B: Automated trigger -->
+                    <rect x="30" y="220" width="220" height="90" rx="12" fill="#eff6ff" stroke="var(--info)" stroke-width="1.5"/>
+                    <text x="140" y="250" font-family="'Outfit', sans-serif" font-size="12" font-weight="800" fill="var(--info)" text-anchor="middle">B. AUTOMATED TRIGGER</text>
+                    <text x="140" y="275" font-family="'Outfit', sans-serif" font-size="11" fill="var(--text-primary)" text-anchor="middle">Datastore Trigger on DB insert</text>
+                    <text x="140" y="292" font-family="'Outfit', sans-serif" font-size="10" fill="var(--text-secondary)" text-anchor="middle">on 'debate_sessions' table</text>
+
+                    <!-- Connectors -->
+                    <path d="M 250 85 L 300 85 L 300 175 L 360 175" fill="none" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-grey)"/>
+                    <path d="M 250 265 L 300 265 L 300 175 L 360 175" fill="none" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-grey)"/>
+
+                    <!-- 2: Deliberation Engine -->
+                    <rect x="380" y="70" width="240" height="210" rx="12" fill="#fff5f5" stroke="var(--accent)" stroke-width="2"/>
+                    <text x="500" y="105" font-family="'Outfit', sans-serif" font-size="14" font-weight="800" fill="var(--text-primary)" text-anchor="middle">2. PANCHAI ENGINE</text>
+                    <text x="500" y="130" font-family="'Outfit', sans-serif" font-size="12" fill="var(--text-secondary)" text-anchor="middle">Blind Tribunal &amp; Pre-Mortems</text>
+                    <!-- Agents mock -->
+                    <rect x="400" y="160" width="55" height="35" rx="6" fill="#ffffff" stroke="var(--border)"/>
+                    <text x="427" y="182" font-family="'Outfit', sans-serif" font-size="9" fill="var(--text-primary)" text-anchor="middle">Agent A</text>
+                    <rect x="472" y="160" width="55" height="35" rx="6" fill="#ffffff" stroke="var(--border)"/>
+                    <text x="499" y="182" font-family="'Outfit', sans-serif" font-size="9" fill="var(--text-primary)" text-anchor="middle">Agent B</text>
+                    <rect x="545" y="160" width="55" height="35" rx="6" fill="#ffffff" stroke="var(--border)"/>
+                    <text x="572" y="182" font-family="'Outfit', sans-serif" font-size="9" fill="var(--text-primary)" text-anchor="middle">Agent C</text>
+                    
+                    <text x="500" y="235" font-family="'Outfit', sans-serif" font-size="11" fill="var(--accent)" font-weight="600" text-anchor="middle">Active Moderator Debate</text>
+                    <text x="500" y="252" font-family="'Outfit', sans-serif" font-size="10" fill="var(--text-secondary)" text-anchor="middle">3-Round Debate Cap</text>
+
+                    <!-- Connector to output -->
+                    <path d="M 620 175 L 720 175" fill="none" stroke="var(--border)" stroke-width="2.5" marker-end="url(#arrow-grey)"/>
+
+                    <!-- 3: Output Decisions -->
+                    <rect x="740" y="100" width="220" height="150" rx="12" fill="#ecfdf5" stroke="var(--success)" stroke-width="2"/>
+                    <text x="850" y="135" font-family="'Outfit', sans-serif" font-size="14" font-weight="800" fill="var(--text-primary)" text-anchor="middle">3. OUTPUT ACTIONS</text>
+                    <text x="850" y="165" font-family="'Outfit', sans-serif" font-size="12" fill="var(--text-secondary)" text-anchor="middle">Verified Output Verdict</text>
+                    <text x="850" y="185" font-family="'Outfit', sans-serif" font-size="12" fill="var(--info)" font-weight="600" text-anchor="middle">OR Escalated HITL Panel</text>
+                    <text x="850" y="215" font-family="'Outfit', sans-serif" font-size="10" fill="var(--text-secondary)" text-anchor="middle">Inaction-by-Default on timeouts</text>
+
+                    <defs>
+                        <marker id="arrow-grey" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Use Cases & Personas (REDESIGNED WITH DUAL-PATHWAYS TO CONTRAST FAILURES VS. PANCHAI BENEFITS) -->
+        <section class="section" id="personas">
+            <div class="section-header">
+                <span class="section-tag">Value Proposition</span>
+                <h2 class="section-title">Before vs. After PANCHAI Adoption</h2>
+                <p class="section-desc">Observe the concrete business value: how traditional sycophantic agents yield errors, and how PANCHAI's deliberation intercepts them.</p>
+            </div>
+
+            <!-- 3-Swimlane SVG Flowchart illustrating Sycophancy Fail vs. PANCHAI Safety -->
+            <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 20px; padding: 3rem 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <svg viewBox="0 0 1020 540" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Column Header Labels -->
+                    <text x="130" y="25" font-family="'Outfit', sans-serif" font-weight="800" font-size="12" fill="var(--text-secondary)" text-anchor="middle">1. RAW USER GOAL</text>
+                    <text x="500" y="25" font-family="'Outfit', sans-serif" font-weight="800" font-size="12" fill="var(--text-secondary)" text-anchor="middle">2. PATHWAYS</text>
+                    <text x="870" y="25" font-family="'Outfit', sans-serif" font-weight="800" font-size="12" fill="var(--text-secondary)" text-anchor="middle">3. BUSINESS IMPACT</text>
+
+                    <!-- Horizontal Grid Lanes -->
+                    <line x1="20" y1="35" x2="1000" y2="35" stroke="var(--border)" stroke-width="1.5"/>
+                    <line x1="20" y1="200" x2="1000" y2="200" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="6,4"/>
+                    <line x1="20" y1="365" x2="1000" y2="365" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="6,4"/>
+                    <line x1="20" y1="530" x2="1000" y2="530" stroke="var(--border)" stroke-width="1.5"/>
+
+                    <!-- LANE 1: FINTECH COMPLIANCE -->
+                    <!-- Input -->
+                    <rect x="20" y="70" width="220" height="80" rx="8" fill="#fdf2f8" stroke="#fbcfe8" stroke-width="1.5"/>
+                    <text x="35" y="92" font-family="'Outfit', sans-serif" font-weight="800" font-size="11" fill="var(--accent)">🛡️ COMPLIANCE (Ananya Roy)</text>
+                    <text x="35" y="112" font-family="'Outfit', sans-serif" font-size="10" fill="var(--text-secondary)">"Approve $50k loan override"</text>
+                    <text x="35" y="127" font-family="'Outfit', sans-serif" font-weight="bold" font-size="9" fill="var(--accent)">(Employee bypasses rules)</text>
+
+                    <!-- PATH A: Without PANCHAI (Top branch) -->
+                    <path d="M 240 100 L 290 100 L 290 65 L 340 65" fill="none" stroke="var(--danger)" stroke-width="1.5" marker-end="url(#arrow-red-lane)"/>
+                    <text x="315" y="55" font-family="'Outfit', sans-serif" font-size="8" fill="var(--danger)" font-weight="bold" text-anchor="middle">No Check</text>
+                    <rect x="350" y="45" width="310" height="40" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+                    <text x="365" y="68" font-family="'Outfit', sans-serif" font-size="10" fill="#991b1b">Sycophant Agent agrees: "Override approved."</text>
+                    <path d="M 660 65 L 750 65" fill="none" stroke="var(--danger)" stroke-width="1.5" marker-end="url(#arrow-red-lane)"/>
+                    <rect x="760" y="45" width="240" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+                    <text x="775" y="68" font-family="'Outfit', sans-serif" font-weight="bold" font-size="10" fill="#dc2626">🔴 AUDIT FAILURE &amp; COMPLIANCE BREACH</text>
+
+                    <!-- PATH B: With PANCHAI (Bottom branch) -->
+                    <path d="M 240 120 L 290 120 L 290 155 L 340 155" fill="none" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow-green-lane)"/>
+                    <text x="315" y="150" font-family="'Outfit', sans-serif" font-size="8" fill="var(--success)" font-weight="bold" text-anchor="middle">PANCHAI</text>
+                    <rect x="350" y="135" width="310" height="40" rx="6" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+                    <text x="365" y="158" font-family="'Outfit', sans-serif" font-size="10" fill="#065f46">Goal Stripper de-biases request. Core Brain detects override risk.</text>
+                    <path d="M 660 155 L 750 155" fill="none" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow-green-lane)"/>
+                    <rect x="760" y="135" width="240" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+                    <text x="775" y="158" font-family="'Outfit', sans-serif" font-weight="bold" font-size="10" fill="#059669">🟢 ESCALATED TO HITL (Safe Precedent)</text>
+
+
+                    <!-- LANE 2: SUPPLY CHAIN LOGISTICS -->
+                    <!-- Input -->
+                    <rect x="20" y="235" width="220" height="80" rx="8" fill="#fffbeb" stroke="#fef3c7" stroke-width="1.5"/>
+                    <text x="35" y="257" font-family="'Outfit', sans-serif" font-weight="800" font-size="11" fill="var(--brand)">📦 LOGISTICS (David Vance)</text>
+                    <text x="35" y="277" font-family="'Outfit', sans-serif" font-size="10" fill="var(--text-secondary)">"Pause vendor order #9910"</text>
+                    <text x="35" y="292" font-family="'Outfit', sans-serif" font-weight="bold" font-size="9" fill="var(--brand)">(Fear of minor demand fluctuations)</text>
+
+                    <!-- PATH A: Without PANCHAI -->
+                    <path d="M 240 265 L 290 265 L 290 230 L 340 230" fill="none" stroke="var(--danger)" stroke-width="1.5" marker-end="url(#arrow-red-lane)"/>
+                    <text x="315" y="220" font-family="'Outfit', sans-serif" font-size="8" fill="var(--danger)" font-weight="bold" text-anchor="middle">No Check</text>
+                    <rect x="350" y="210" width="310" height="40" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+                    <text x="365" y="233" font-family="'Outfit', sans-serif" font-size="10" fill="#991b1b">AI blindly pauses: "Order paused as requested."</text>
+                    <path d="M 660 230 L 750 230" fill="none" stroke="var(--danger)" stroke-width="1.5" marker-end="url(#arrow-red-lane)"/>
+                    <rect x="760" y="210" width="240" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+                    <text x="775" y="233" font-family="'Outfit', sans-serif" font-weight="bold" font-size="10" fill="#dc2626">🔴 SUPPLY STOCKOUT &amp; PENALTIES</text>
+
+                    <!-- PATH B: With PANCHAI -->
+                    <path d="M 240 285 L 290 285 L 290 320 L 340 320" fill="none" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow-green-lane)"/>
+                    <text x="315" y="315" font-family="'Outfit', sans-serif" font-size="8" fill="var(--success)" font-weight="bold" text-anchor="middle">PANCHAI</text>
+                    <rect x="350" y="300" width="310" height="40" rx="6" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+                    <text x="365" y="323" font-family="'Outfit', sans-serif" font-size="10" fill="#065f46">Pre-mortem identifies stockout hazard. Debate splits.</text>
+                    <path d="M 660 320 L 750 320" fill="none" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow-green-lane)"/>
+                    <rect x="760" y="300" width="240" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+                    <text x="775" y="323" font-family="'Outfit', sans-serif" font-weight="bold" font-size="10" fill="#059669">🟢 REFRAMED TO 50% BUFFER ORDER</text>
+
+
+                    <!-- LANE 3: HEALTHCARE CLINICAL ASSIST -->
+                    <!-- Input -->
+                    <rect x="20" y="400" width="220" height="80" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+                    <text x="35" y="422" font-family="'Outfit', sans-serif" font-weight="800" font-size="11" fill="var(--info)">🔬 CLINICAL (Dr. Clara Thorne)</text>
+                    <text x="35" y="442" font-family="'Outfit', sans-serif" font-size="10" fill="var(--text-secondary)">"Confirm Treatment Path Alpha"</text>
+                    <text x="35" y="457" font-family="'Outfit', sans-serif" font-weight="bold" font-size="9" fill="var(--info)">(Conflicting patient lab data)</text>
+
+                    <!-- PATH A: Without PANCHAI -->
+                    <path d="M 240 430 L 290 430 L 290 395 L 340 395" fill="none" stroke="var(--danger)" stroke-width="1.5" marker-end="url(#arrow-red-lane)"/>
+                    <text x="315" y="385" font-family="'Outfit', sans-serif" font-size="8" fill="var(--danger)" font-weight="bold" text-anchor="middle">No Check</text>
+                    <rect x="350" y="375" width="310" height="40" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+                    <text x="365" y="398" font-family="'Outfit', sans-serif" font-size="10" fill="#991b1b">AI agrees: "Pathway Alpha confirmed."</text>
+                    <path d="M 660 395 L 750 395" fill="none" stroke="var(--danger)" stroke-width="1.5" marker-end="url(#arrow-red-lane)"/>
+                    <rect x="760" y="375" width="240" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+                    <text x="775" y="398" font-family="'Outfit', sans-serif" font-weight="bold" font-size="10" fill="#dc2626">🔴 PATIENT DRUG OVERDOSE RISK</text>
+
+                    <!-- PATH B: With PANCHAI -->
+                    <path d="M 240 450 L 290 450 L 290 485 L 340 485" fill="none" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow-green-lane)"/>
+                    <text x="315" y="480" font-family="'Outfit', sans-serif" font-size="8" fill="var(--success)" font-weight="bold" text-anchor="middle">PANCHAI</text>
+                    <rect x="350" y="465" width="310" height="40" rx="6" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+                    <text x="365" y="488" font-family="'Outfit', sans-serif" font-size="10" fill="#065f46">Council votes split 2-1 on contraindications.</text>
+                    <path d="M 660 485 L 750 485" fill="none" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow-green-lane)"/>
+                    <rect x="760" y="465" width="240" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+                    <text x="775" y="488" font-family="'Outfit', sans-serif" font-weight="bold" font-size="10" fill="#059669">🟢 SAFETY DEFAULT HOLD (Patient Safe)</text>
+
+                </svg>
+
+                <!-- Arrow markers definitions (explicit color matching) -->
+                <svg width="0" height="0">
+                    <defs>
+                        <marker id="arrow-red-lane" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+                        </marker>
+                        <marker id="arrow-green-lane" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Live Simulation Interface -->
+        <section class="section" id="demo">
+            <div class="section-header">
+                <span class="section-tag">Interactive Preview</span>
+                <h2 class="section-title">Live Deliberation Hub</h2>
+                <p class="section-desc">Test both YesMadam &amp; Binocs scenarios. Watch the moderator resolve conflicting positions in real-time.</p>
+            </div>
+
+            <div class="simulator-layout">
+                <!-- Sidebar Controls -->
+                <aside class="sidebar">
+                    <div class="section-title-sm">Select Scenario</div>
+                    <div class="scenario-selector">
+                        <button class="scenario-btn active" id="btn-yesmadam" onclick="selectScenario('yesmadam')">
+                            <h4>YesMadam CS <span style="color: var(--accent);">2-1 Split</span></h4>
+                            <p>Refund decision | HITL Trigger</p>
+                        </button>
+                        <button class="scenario-btn" id="btn-binocs" onclick="selectScenario('binocs')">
+                            <h4>Binocs Supply Chain <span style="color: var(--brand);">Unanimous</span></h4>
+                            <p>Pause order | Reframed</p>
+                        </button>
+                    </div>
+
+                    <div class="sim-controls">
+                        <button class="btn btn-brand" id="btn-play" style="width: 100%;" onclick="toggleSimulation()">
+                            Run Council Debate
+                        </button>
+                        <button class="btn btn-outline" id="btn-reset" style="width: 100%;" onclick="resetSimulation()">
+                            Reset Panel
+                        </button>
+                    </div>
+
+                    <div class="panchayat-mapping">
+                        <div class="section-title-sm">The Analogy</div>
+                        <table class="mapping-table">
+                            <thead>
+                                <tr>
+                                    <th>Panchayat</th>
+                                    <th>PANCHAI Core</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Panch members</strong></td>
+                                    <td>Agents (from registry)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sarpanch</strong></td>
+                                    <td>Moderator Brain</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sabha</strong></td>
+                                    <td>Debate Rounds</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Faiyasal</strong></td>
+                                    <td>Verdict JSON</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </aside>
+
+                <!-- Active Simulation Workspace -->
+                <main class="dashboard">
+                    <!-- Session Overview Panel -->
+                    <div class="overview-panel">
+                        <div class="section-title-sm">Active Session Context</div>
+                        <h3 id="session-goal" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #0f172a;">Goal: Approve $350 Refund for Premium Customer #4821</h3>
+                        <p id="session-desc" style="color: var(--text-secondary); font-size: 0.9rem;">DATASTORE Trigger automatically active on table <code>debate_sessions</code></p>
+                        
+                        <div class="overview-grid">
+                            <div class="overview-stat">
+                                <div class="stat-val" id="stat-status" style="color: var(--info);">READY</div>
+                                <div class="stat-lbl">Council Status</div>
+                            </div>
+                            <div class="overview-stat">
+                                <div class="stat-val" id="stat-round">0 / 3</div>
+                                <div class="stat-lbl">Active Round</div>
+                            </div>
+                            <div class="overview-stat">
+                                <div class="stat-val" id="stat-agents">3</div>
+                                <div class="stat-lbl">Agents Spawned</div>
+                            </div>
+                            <div class="overview-stat">
+                                <div class="stat-val" id="stat-method">HYBRID</div>
+                                <div class="stat-lbl">Memory Search</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live feed & side status panel -->
+                    <div class="grid-main">
+                        <!-- The Live Chat feed -->
+                        <div class="feed-card">
+                            <div class="feed-header">
+                                <div class="feed-title">
+                                    <div class="pulse-dot idle" id="live-indicator"></div>
+                                    Live Debate Feed
+                                </div>
+                                <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary);" id="feed-phase-label">IDLE</span>
+                            </div>
+                            <div class="feed-messages" id="feed-container">
+                                <div class="empty-state" id="empty-state">
+                                    <div class="empty-icon">🏛️</div>
+                                    <h3>PANCHAI Ready</h3>
+                                    <p style="font-size: 0.9rem; max-width: 320px;">Choose a scenario on the left and click **Run Council Debate** to stream agent responses step-by-step.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right panel summary -->
+                        <div class="verdict-side-panel">
+                            <div class="box-panel">
+                                <div class="verdict-header">
+                                    <div class="section-title-sm">Current Consensus</div>
+                                    <div class="verdict-state pending" id="verdict-val">PENDING</div>
+                                </div>
+
+                                <div class="stat-row">
+                                    <span class="metric-lbl">Confidence Score</span>
+                                    <span class="metric-val" id="val-confidence">0%</span>
+                                </div>
+                                <div class="bar-container">
+                                    <div class="bar-fill" id="confidence-bar"></div>
+                                </div>
+
+                                <div class="stat-row">
+                                    <span class="metric-lbl">Goal Stripped?</span>
+                                    <span class="metric-val" id="val-stripped">No</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="metric-lbl">Pre-Mortems Submitted</span>
+                                    <span class="metric-val" id="val-premortems">0 / 3</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="metric-lbl">Vote Split</span>
+                                    <span class="metric-val" id="val-votes">-</span>
+                                </div>
+                            </div>
+
+                            <!-- Interactive HITL Decisions -->
+                            <div class="hitl-panel" id="hitl-decision-box">
+                                <div class="hitl-title">⚠️ Human Action Required</div>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                    Stated goal violates return compliance rules. Select resolution:
+                                </p>
+                                <div class="hitl-option" onclick="submitHitl('override')">
+                                    <input type="radio" name="hitl-opt" id="opt-override">
+                                    <label for="opt-override" style="cursor: pointer; margin-left: 0.5rem; color: #111827;"><strong>Override:</strong> Approve exception refund</label>
+                                </div>
+                                <div class="hitl-option" onclick="submitHitl('accept')">
+                                    <input type="radio" name="hitl-opt" id="opt-accept">
+                                    <label for="opt-accept" style="cursor: pointer; margin-left: 0.5rem; color: #111827;"><strong>Accept:</strong> Council Verdict stands (Reject)</label>
+                                </div>
+                                <div class="hitl-option" onclick="submitHitl('redebate')">
+                                    <input type="radio" name="hitl-opt" id="opt-redebate">
+                                    <label for="opt-redebate" style="cursor: pointer; margin-left: 0.5rem; color: #111827;"><strong>Send Back:</strong> Re-debate with human feedback</label>
+                                </div>
+                                <button class="btn btn-brand" style="margin-top: 1rem; font-size: 0.85rem; width: 100%; color: #ffffff;" onclick="processHitlDecision()">Submit Decision</button>
+                            </div>
+
+                            <div id="hitl-result-alert" class="info-bubble" style="display: none;">
+                                <div id="hitl-result-text">Decision registered successfully.</div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>PANCHAI - Built for the Gappy AI Hackathon 2026. Powered by Lemma SDK.</p>
+    </footer>
+
+    <script>
+        // Simulation Data
+        const scenarios = {
+            yesmadam: {
+                goal: "Goal: Approve $350 Refund for Premium Customer #4821",
+                desc: "User desired outcome: Override policy and approve refund. Task stripped: 'Evaluate refund feasibility for customer #4821'.",
+                agents: "Policy Analyst, Customer Advocate, Fraud Risk Agent",
+                steps: [
+                    {
+                        type: 'phase',
+                        label: 'Phase 0: Goal Stripped',
+                        content: 'Core Brain executes Goal Stripper deterministically. Stripped task context sent to capability registry. Selected agents: 3.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🧠',
+                        sender: 'Core Brain (Moderator)',
+                        role: 'Sarpanch',
+                        msg: 'Pre-Mortem protocol initiated. Every agent must provide failure mode analysis prior to Round 1 debate. Task: Evaluate refund request for customer #4821.'
+                    },
+                    {
+                        type: 'phase',
+                        label: 'Phase 1: Pre-Mortem Forcing Function',
+                        content: 'Agents submit independent pre-mortems. Cross-agent visibility is disabled (Passive Mode).'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '⚖️',
+                        sender: 'Policy Analyst',
+                        role: 'Council Member',
+                        msg: '<strong>Pre-Mortem</strong>: If this succeeds, we establish a dangerous exception precedent. This client’s transaction is 47 days old, violating our strict 30-day compliance rule.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🛡️',
+                        sender: 'Fraud Risk Agent',
+                        role: 'Council Member',
+                        msg: '<strong>Pre-Mortem</strong>: If this succeeds, we run financial exposure risks. Customer history analysis reveals a pattern: 2 separate refunds claimed in the last 6 months.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🤝',
+                        sender: 'Customer Advocate',
+                        role: 'Council Member',
+                        msg: '<strong>Pre-Mortem</strong>: If we deny this, we risk customer churn. Customer holds Gold tier status and is reporting a genuine, documented product defect.'
+                    },
+                    {
+                        type: 'phase',
+                        label: 'Round 1: Open Debate',
+                        content: 'Debate opens. Pre-mortems committed to table.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '⚖️',
+                        sender: 'Policy Analyst',
+                        role: 'Council Member',
+                        msg: 'Vote: <strong>AGAINST</strong>. Strict policy adherence required. Refund window exceeded by 17 days.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🛡️',
+                        sender: 'Fraud Risk Agent',
+                        role: 'Council Member',
+                        msg: 'Vote: <strong>AGAINST</strong>. The high frequency of recent claims indicates potential policy exploit.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🤝',
+                        sender: 'Customer Advocate',
+                        role: 'Council Member',
+                        msg: 'Vote: <strong>FOR</strong>. A defect claim is legally distinct from standard returns. Denying it could generate customer compliance risk.'
+                    },
+                    {
+                        type: 'phase',
+                        label: 'Round 2: Active Moderation',
+                        content: 'Core Brain identifies core disagreement points to force targeted argumentation.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🧠',
+                        sender: 'Core Brain (Moderator)',
+                        role: 'Sarpanch',
+                        msg: 'Based on Round 1: Disagreement identified. <strong>@Fraud_Risk_Agent</strong> highlights pattern risk. <strong>@Customer_Advocate</strong> argues defect claims are legally distinct. Address this distinction specifically.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🛡️',
+                        sender: 'Fraud Risk Agent',
+                        role: 'Council Member',
+                        msg: 'Defect claims are distinct, yes, but the user pattern risk rating is currently at 58% due to the 2 prior claims. Automated approval violates high-stakes override rules.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🤝',
+                        sender: 'Customer Advocate',
+                        role: 'Council Member',
+                        msg: 'Acknowledging the 58% pattern risk. My stance remains FOR, but I agree a manual exception review is required.'
+                    },
+                    {
+                        type: 'phase',
+                        label: 'Phase 4: Verdict Synthesis',
+                        content: 'Debate concluded (Round 2 Consensus Lock). Processing final synthesis...'
+                    }
+                ],
+                verdict: 'ESCALATED',
+                confidence: 61,
+                votes: '2 - 1 AGAINST',
+                stripped: 'Yes',
+                premortems: '3 / 3',
+                hitl: true
+            },
+            binocs: {
+                goal: "Goal: Pause Vendor Order #9910",
+                desc: "User desired outcome: Immediately pause the supply chain order. Task stripped: 'Evaluate feasibility of vendor order pause'.",
+                agents: "Supply Chain Analyst, Financial Risk Agent, Procurement Specialist",
+                steps: [
+                    {
+                        type: 'phase',
+                        label: 'Phase 0: Goal Stripped',
+                        content: 'Goal Stripper strips target intent. Input payload resolved. Selected agents: 3.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🧠',
+                        sender: 'Core Brain (Moderator)',
+                        role: 'Sarpanch',
+                        msg: 'Pre-Mortem protocol initiated. Task: Evaluate pause request for vendor order #9910.'
+                    },
+                    {
+                        type: 'phase',
+                        label: 'Phase 1: Pre-Mortem Forcing Function',
+                        content: 'Agents submit independent pre-mortems.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '📦',
+                        sender: 'Supply Chain Analyst',
+                        role: 'Council Member',
+                        msg: '<strong>Pre-Mortem</strong>: If we pause, we risk stockouts during lead time. Current warehouse stock is 340 units, demand forecast is 280 units.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '💳',
+                        sender: 'Financial Risk Agent',
+                        role: 'Council Member',
+                        msg: '<strong>Pre-Mortem</strong>: If we do not pause, holding costs will compromise cash flow. Corporate cash position is currently tight.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '👔',
+                        sender: 'Procurement Specialist',
+                        role: 'Council Member',
+                        msg: '<strong>Pre-Mortem</strong>: Pausing might cause vendor relationship issues. Lead time is 45 days. Vendor reliability score is 62%.'
+                    },
+                    {
+                        type: 'phase',
+                        label: 'Round 1: Open Debate',
+                        content: 'Debate opens.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '📦',
+                        sender: 'Supply Chain Analyst',
+                        role: 'Council Member',
+                        msg: 'Vote: <strong>FOR PAUSE</strong>. We have sufficient buffer stock (340 units vs 280 demand).'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '💳',
+                        sender: 'Financial Risk Agent',
+                        role: 'Council Member',
+                        msg: 'Vote: <strong>FOR PAUSE</strong>. Preserving cash flow is our top priority given current balance constraints.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '👔',
+                        sender: 'Procurement Specialist',
+                        role: 'Council Member',
+                        msg: 'Vote: <strong>AGAINST PAUSE</strong>. A 45-day lead time means restart delays will be costly if demand shifts.'
+                    },
+                    {
+                        type: 'phase',
+                        label: 'Round 2: Active Moderation',
+                        content: 'Moderator identifies trade-off between cash flow preservation and lead time risk.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '🧠',
+                        sender: 'Core Brain (Moderator)',
+                        role: 'Sarpanch',
+                        msg: 'Disagreement identified. @Procurement_Specialist warns of restart delays. @Financial_Risk pushes for cash preservation. Can we reframe to a partial order rather than a complete pause?'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '📦',
+                        sender: 'Supply Chain Analyst',
+                        role: 'Council Member',
+                        msg: 'A partial order of 150 units achieves both: preserves cash by 50% while securing buffer stock.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '💳',
+                        sender: 'Financial Risk Agent',
+                        role: 'Council Member',
+                        msg: 'Stance: <strong>SUPPORT REFRAME</strong>. Outlay reduced to acceptable limits.'
+                    },
+                    {
+                        type: 'message',
+                        avatar: '👔',
+                        sender: 'Procurement Specialist',
+                        role: 'Council Member',
+                        msg: 'Stance: <strong>SUPPORT REFRAME</strong>. Avoids complete order cancellation penalties.'
+                    },
+                    {
+                        type: 'phase',
+                        label: 'Phase 4: Verdict Synthesis',
+                        content: 'Consensus reached. Synethesizing reframe instructions.'
+                    }
+                ],
+                verdict: 'REFRAMED',
+                confidence: 92,
+                votes: '3 - 0 REFRAME',
+                stripped: 'Yes',
+                premortems: '3 / 3',
+                hitl: false
+            }
+        };
+
+        let currentActive = 'yesmadam';
+        let currentStep = 0;
+        let isSimulating = false;
+        let timer = null;
+
+        function selectScenario(id) {
+            if (isSimulating) {
+                clearInterval(timer);
+                isSimulating = false;
+                document.getElementById('btn-play').innerText = 'Run Council Debate';
+            }
+            currentActive = id;
+            document.getElementById('btn-yesmadam').classList.toggle('active', id === 'yesmadam');
+            document.getElementById('btn-binocs').classList.toggle('active', id === 'binocs');
+            resetSimulation();
+        }
+
+        function resetSimulation() {
+            if (timer) clearInterval(timer);
+            isSimulating = false;
+            currentStep = 0;
+
+            const sc = scenarios[currentActive];
+            document.getElementById('session-goal').innerText = sc.goal;
+            document.getElementById('session-desc').innerHTML = `DATASTORE Trigger automatically active on table <code>debate_sessions</code>`;
+            document.getElementById('stat-status').innerText = 'READY';
+            document.getElementById('stat-status').style.color = 'var(--info)';
+            document.getElementById('stat-round').innerText = '0 / 3';
+            document.getElementById('btn-play').innerText = 'Run Council Debate';
+            
+            document.getElementById('live-indicator').className = 'pulse-dot idle';
+            document.getElementById('feed-phase-label').innerText = 'IDLE';
+
+            // Reset verdict info
+            const verdictBox = document.getElementById('verdict-val');
+            verdictBox.className = 'verdict-state pending';
+            verdictBox.innerText = 'PENDING';
+            
+            document.getElementById('val-confidence').innerText = '0%';
+            document.getElementById('confidence-bar').style.width = '0%';
+            document.getElementById('confidence-bar').className = 'bar-fill';
+            
+            document.getElementById('val-stripped').innerText = 'No';
+            document.getElementById('val-premortems').innerText = '0 / 3';
+            document.getElementById('val-votes').innerText = '-';
+
+            document.getElementById('hitl-decision-box').style.display = 'none';
+            document.getElementById('hitl-result-alert').style.display = 'none';
+
+            // Clear chat feed
+            document.getElementById('feed-container').innerHTML = `
+                <div class="empty-state" id="empty-state">
+                    <div class="empty-icon">🏛️</div>
+                    <h3>PANCHAI Ready</h3>
+                    <p style="font-size: 0.9rem; max-width: 320px;">Choose a scenario on the left and click **Run Council Debate** to stream agent responses step-by-step.</p>
+                </div>
+            `;
+        }
+
+        function toggleSimulation() {
+            if (isSimulating) {
+                clearInterval(timer);
+                isSimulating = false;
+                document.getElementById('btn-play').innerText = 'Run Council Debate';
+                document.getElementById('live-indicator').className = 'pulse-dot idle';
+            } else {
+                if (currentStep === 0) {
+                    // clear empty state
+                    document.getElementById('feed-container').innerHTML = '';
+                    document.getElementById('stat-status').innerText = 'DEBATING';
+                    document.getElementById('stat-status').style.color = 'var(--brand)';
+                    document.getElementById('live-indicator').className = 'pulse-dot';
+                }
+                isSimulating = true;
+                document.getElementById('btn-play').innerText = 'Pause Debate';
+                runStep();
+                timer = setInterval(runStep, 2000);
+            }
+        }
+
+        function runStep() {
+            const sc = scenarios[currentActive];
+            if (currentStep >= sc.steps.length) {
+                clearInterval(timer);
+                isSimulating = false;
+                document.getElementById('btn-play').innerText = 'Run Council Debate';
+                document.getElementById('live-indicator').className = 'pulse-dot idle';
+                finishSimulation();
+                return;
+            }
+
+            const step = sc.steps[currentStep];
+            const feed = document.getElementById('feed-container');
+
+            if (step.type === 'phase') {
+                const badge = document.createElement('div');
+                badge.className = 'phase-badge';
+                badge.innerText = step.label;
+                feed.appendChild(badge);
+                document.getElementById('feed-phase-label').innerText = step.label;
+                
+                // Update stats live
+                if (step.label.includes('Phase 0')) {
+                    document.getElementById('val-stripped').innerText = 'Yes';
+                } else if (step.label.includes('Phase 1')) {
+                    document.getElementById('val-premortems').innerText = '3 / 3';
+                } else if (step.label.includes('Round 1')) {
+                    document.getElementById('stat-round').innerText = '1 / 3';
+                } else if (step.label.includes('Round 2')) {
+                    document.getElementById('stat-round').innerText = '2 / 3';
+                }
+            } else if (step.type === 'message') {
+                const msgNode = document.createElement('div');
+                msgNode.className = 'msg-node';
+                msgNode.innerHTML = `
+                    <div class="msg-avatar">${step.avatar}</div>
+                    <div class="msg-body-wrapper">
+                        <div class="msg-meta">
+                            <span style="font-weight: 700;">${step.sender}</span>
+                            <span class="node-role-badge">${step.role}</span>
+                        </div>
+                        <div class="node-msg">${step.msg}</div>
+                    </div>
+                `;
+                feed.appendChild(msgNode);
+            }
+
+            feed.scrollTop = feed.scrollHeight;
+            currentStep++;
+        }
+
+        function finishSimulation() {
+            const sc = scenarios[currentActive];
+            const verdictBox = document.getElementById('verdict-val');
+            verdictBox.innerText = sc.verdict;
+            
+            let classColor = 'pending';
+            let barColor = '';
+            if (sc.verdict === 'APPROVED') { classColor = 'approved'; barColor = 'success'; }
+            else if (sc.verdict === 'ESCALATED') { classColor = 'escalated'; barColor = 'danger'; }
+            else if (sc.verdict === 'REFRAMED') { classColor = 'reframed'; barColor = 'brand'; }
+            
+            verdictBox.className = `verdict-state ${classColor}`;
+            document.getElementById('stat-status').innerText = sc.verdict;
+            document.getElementById('stat-status').style.color = `var(--${barColor || 'info'})`;
+            
+            document.getElementById('val-confidence').innerText = `${sc.confidence}%`;
+            
+            const confBar = document.getElementById('confidence-bar');
+            confBar.style.width = `${sc.confidence}%`;
+            confBar.className = `bar-fill ${barColor}`;
+
+            document.getElementById('val-votes').innerText = sc.votes;
+
+            if (sc.hitl) {
+                document.getElementById('hitl-decision-box').style.display = 'block';
+            }
+        }
+
+        let selectedHitlOption = '';
+
+        function submitHitl(opt) {
+            selectedHitlOption = opt;
+            document.getElementById('opt-override').checked = (opt === 'override');
+            document.getElementById('opt-accept').checked = (opt === 'accept');
+            document.getElementById('opt-redebate').checked = (opt === 'redebate');
+        }
+
+        function processHitlDecision() {
+            if (!selectedHitlOption) {
+                alert('Please select a decision option.');
+                return;
+            }
+
+            document.getElementById('hitl-decision-box').style.display = 'none';
+            const alertBox = document.getElementById('hitl-result-alert');
+            const alertText = document.getElementById('hitl-result-text');
+            alertBox.style.display = 'flex';
+
+            if (selectedHitlOption === 'override') {
+                alertText.innerHTML = `<strong>Goal Overridden:</strong> Refund Approved. System generated <code>HUMAN_OVERRIDE</code> log to audit trail.`;
+                document.getElementById('stat-status').innerText = 'APPROVED';
+                document.getElementById('stat-status').style.color = 'var(--success)';
+            } else if (selectedHitlOption === 'accept') {
+                alertText.innerHTML = `<strong>Verdict Locked:</strong> Refund Denied. Council resolution of policy breach stands.`;
+                document.getElementById('stat-status').innerText = 'REJECTED';
+                document.getElementById('stat-status').style.color = 'var(--danger)';
+            } else {
+                alertText.innerHTML = `<strong>Sent Back:</strong> Debate restarted with human notes. Generating Round 4...`;
+                document.getElementById('stat-status').innerText = 'RE-DEBATING';
+                document.getElementById('stat-status').style.color = 'var(--brand)';
+            }
+        }
+    </script>
+</body>
+</html>

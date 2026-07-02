@@ -59,7 +59,7 @@
       "label": "HITL Required?",
       "config": {
         "rules": [
-          { "condition": "deliberation.verdict.hitl_required == true", "next_node_id": "hitl_approval" }
+          { "condition": "deliberation.hitl_required == true", "next_node_id": "hitl_approval" }
         ]
       }
     },
@@ -80,10 +80,10 @@
     },
     {
       "id": "process_hitl",
-      "type": "AGENT",
+      "type": "FUNCTION",
       "label": "Process HITL",
       "config": {
-        "agent_name": "panchai-brain",
+        "function_name": "process_hitl",
         "input_mapping": {
           "session_id": { "type": "expression", "value": "deliberation.session_id" },
           "decision": { "type": "expression", "value": "hitl_approval.decision" },

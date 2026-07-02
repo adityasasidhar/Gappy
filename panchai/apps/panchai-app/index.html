@@ -202,7 +202,8 @@
     
     /* ─── Sidebar ─── */
     .sidebar {
-      width: 360px;
+      width: 280px;
+      min-width: 280px;
       background: rgba(14, 15, 20, 0.7);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
@@ -1401,7 +1402,7 @@
     }
     
     @media (max-width: 1000px) {
-      .sidebar { width: 300px; }
+      .sidebar { width: 240px; min-width: 240px; }
       .view { padding: 24px; }
     }
     
@@ -1845,8 +1846,28 @@
     </main>
   </div>
 
+  <!-- Toast Notification -->
+  <div id="toast-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 300; display: flex; flex-direction: column; gap: 8px; max-width: 400px;"></div>
+  <style>
+    .toast {
+      background: rgba(18, 18, 24, 0.95);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      border-left: 4px solid var(--risk);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      animation: toastIn 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .toast-title { font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+    .toast-body { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+  </style>
+
   <!-- Intake Modal -->
-  <div id="intake-modal" class="modal-overlay">
+    <div id="intake-modal" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
         <i data-lucide="scale" style="width: 28px; height: 28px;"></i>
@@ -1876,20 +1897,26 @@
         </button>
       </div>
     </div>
-  </div>
+    </div></div>
 
   <script>
     // Injected or fallback configuration
     const lemmaConfig = window.__LEMMA_CONFIG__ || {};
-    const client = window.LemmaClient?.LemmaClient
-      ? new window.LemmaClient.LemmaClient({
-          apiUrl: lemmaConfig.apiUrl || window.__LEMMA_BASE_URL__ || 'https://api.lemma.work',
-          timeoutMs: 120000
-        })
-      : null;
-    if (client && !client.podId) {
-      const podId = lemmaConfig.podId || window.__LEMMA_POD_ID__;
-      if (podId) client.setPodId(podId);
+    const lemmaPodId = lemmaConfig.podId || window.__LEMMA_POD_ID__;
+    let client = null;
+
+    function ensureClient() {
+      if (client) return client;
+      if (!window.LemmaClient?.LemmaClient) return null;
+      const c = new window.LemmaClient.LemmaClient({
+        apiUrl: lemmaConfig.apiUrl || window.__LEMMA_BASE_URL__ || 'https://api.lemma.work',
+        authUrl: lemmaConfig.authUrl,
+        podId: lemmaPodId,
+        timeoutMs: 120000
+      });
+      if (c && !c.podId && lemmaPodId) c.setPodId(lemmaPodId);
+      client = c;
+      return client;
     }
 
     // State Variables
@@ -2051,14 +2078,21 @@
     async function initApp() {
       lucide.createIcons();
       
-      if (!client) {
+      // Try SDK connection (retry up to 5s for late-loading script)
+      let c = ensureClient();
+      for (let retry = 0; !c && retry < 10; retry++) {
+        await new Promise(r => setTimeout(r, 500));
+        c = ensureClient();
+      }
+      
+      if (!c) {
         setConnectionStatus(false, 'Simulation Mode');
         lemmaConnected = false;
         loadSessions();
       } else {
         try {
-          await client.initialize();
-          if (client.podId) {
+          await c.initialize();
+          if (c.podId) {
             lemmaConnected = true;
             setConnectionStatus(true, 'Live Pod Mode');
             loadSessions();
@@ -2151,7 +2185,8 @@
               const opt = document.createElement('option');
               opt.value = session.id;
               const shortGoal = session.task_input ? session.task_input.substring(0, 45) + '...' : 'Unknown Task';
-              opt.textContent = `${session.client_id.toUpperCase()} - ${shortGoal}`;
+              const cid = (session.client_id || '?').toUpperCase();
+              opt.textContent = `${cid} - ${shortGoal}`;
               sessionSelect.appendChild(opt);
             });
           }
@@ -2273,6 +2308,8 @@
             if (session.status === 'hitl') {
               document.getElementById('hitl-form-container').style.display = 'block';
               findWorkflowRun(sessionId);
+            } else {
+              document.getElementById('hitl-form-container').style.display = 'none';
             }
           }
           
@@ -2626,7 +2663,9 @@
     async function loadVerdict(sessionId) {
       try {
         const resp = await client.records.list("verdicts", {
-          filters: [{ field: "session_id", op: "eq", value: sessionId }]
+          filters: [{ field: "session_id", op: "eq", value: sessionId }],
+          sort: [{ field: "created_at", direction: "desc" }],
+          limit: 1
         });
         
         if (!resp.items || resp.items.length === 0) {
@@ -2774,14 +2813,28 @@
       
       try {
         if (currentWorkflowRunId) {
-          const podId = client.podId;
-          await client.request('POST', `/pods/${podId}/workflow-runs/${currentWorkflowRunId}/form`, {
-            body: {
-              node_id: formNodeId || 'hitl_approval',
-              inputs: { decision, decision_reason: reason }
-            }
+          // First HITL — submit to the waiting workflow run
+          await client.workflows.runs.submitForm(currentWorkflowRunId, {
+            node_id: formNodeId || 'hitl_approval',
+            inputs: { decision, decision_reason: reason }
+          });
+        } else if (decision === 'send_back') {
+          // No active workflow run — trigger re-debate directly via process_hitl function
+          const vResp = await client.records.list("verdicts", {
+            filters: [{ field: "session_id", op: "eq", value: activeSessionId }],
+            sort: [{ field: "created_at", direction: "desc" }],
+            limit: 1
+          });
+          const latestV = vResp.items?.[0] || {};
+          await client.functions.call("process_hitl", {
+            session_id: activeSessionId,
+            decision: 'send_back',
+            decision_reason: reason,
+            verdict: latestV.verdict || 'ESCALATED',
+            confidence_score: latestV.confidence_score || 0.5
           });
         } else {
+          // approve / reject without active workflow — direct DB write
           await client.records.create("hitl_queue", {
             session_id: activeSessionId,
             status: "resolved",
@@ -2789,7 +2842,7 @@
             decision_reason: reason
           });
           await client.records.update("debate_sessions", activeSessionId, {
-            status: decision === 'send_back' ? 'debating' : 'done'
+            status: 'done'
           });
         }
         
@@ -2797,7 +2850,7 @@
           <div style="text-align: center; padding: 20px;">
             <i data-lucide="check-circle" style="color: var(--consensus); width: 48px; height: 48px; margin-bottom: 16px;"></i>
             <h3>Decision Recorded</h3>
-            <p style="color: var(--text-muted); margin-top: 8px;">The pipeline has successfully processed your verdict override.</p>
+            <p style="color: var(--text-muted); margin-top: 8px;">Processing verdict override...</p>
           </div>
         `;
         lucide.createIcons();
@@ -2810,11 +2863,10 @@
 
     async function findWorkflowRun(sessionId) {
       try {
-        const podId = client.podId;
-        const listResp = await client.request('GET', `/pods/${podId}/workflows/debate-pipeline/runs`);
+        const listResp = await client.workflows.runs.list("debate-pipeline");
         const waitingRuns = (listResp?.items || []).filter(run => run.status === 'WAITING');
         for (const summary of waitingRuns) {
-          const detailResp = await client.request('GET', `/pods/${podId}/workflow-runs/${summary.id}`);
+          const detailResp = await client.workflows.runs.get(summary.id);
           const ctx = detailResp?.execution_context || {};
           if (JSON.stringify(ctx).includes(sessionId)) {
             currentWorkflowRunId = detailResp.id;
@@ -2841,8 +2893,11 @@
       
       const renderBatch = (items) => {
         if (!items || items.length === 0) return;
-        // Sort by created_at ascending to ensure chronological round rendering
+        // Sort by round_number then created_at to ensure correct round order
         const sorted = [...items].sort((a, b) => {
+          const rA = parseInt(a.round_number, 10) || 0;
+          const rB = parseInt(b.round_number, 10) || 0;
+          if (rA !== rB) return rA - rB;
           const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
           const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
           return tA - tB;
@@ -2985,16 +3040,18 @@
             
             if (session.status === 'hitl') {
               document.getElementById('hitl-form-container').style.display = 'block';
-              tabs[2].click(); // Switch to verdict dashboard
               await findWorkflowRun(sessionId);
+            } else {
+              document.getElementById('hitl-form-container').style.display = 'none';
             }
           }
           
-          if (session.status !== 'done' && session.status !== 'hitl' && session.status !== 'failed') {
+          if (session.status !== 'done' && session.status !== 'failed') {
             sessionSubscription = setTimeout(pollSession, 3000);
           }
         } catch (err) {
-          console.error(err);
+          console.error("Session poll error (will retry):", err);
+          sessionSubscription = setTimeout(pollSession, 3000);
         }
       };
       pollSession();
@@ -3027,7 +3084,7 @@
 
       if (!lemmaConnected) {
         // Simulation mode session spawn
-        setTimeout(() => {
+        setTimeout(async () => {
           const newSessionId = `sim-custom-${Date.now()}`;
           const newSession = {
             id: newSessionId,
@@ -3076,7 +3133,7 @@
           
           // Set active and run simulation
           sessionSelect.value = newSessionId;
-          setActiveSession(newSessionId);
+          await setActiveSession(newSessionId);
           
           // Switch to feed tab
           document.getElementById('tab-feed').click();
@@ -3085,41 +3142,67 @@
         return;
       }
 
-      // SDK Mode
+      // SDK Mode — wrap each phase with a timeout to avoid hanging forever
+      const withTimeout = (promise, ms, label) => {
+        return Promise.race([
+          promise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error(`SDK ${label} timed out after ${ms/1000}s`)), ms))
+        ]);
+      };
+
+      btn.innerHTML = 'Creating workflow run... <i data-lucide="loader" class="icon-sm"></i>';
+      lucide.createIcons({root: btn});
+
       try {
         const podId = client.podId;
         
         // 1. Create a run of the debate-pipeline workflow
-        const runRes = await client.workflows.runs.create("debate-pipeline");
+        const runRes = await withTimeout(
+          client.workflows.runs.create("debate-pipeline"),
+          30000, 'create_run'
+        );
         const runId = runRes.id;
         
+        btn.innerHTML = 'Submitting deliberation... <i data-lucide="loader" class="icon-sm"></i>';
+        lucide.createIcons({root: btn});
+
         // 2. Submit the form inputs to start execution of the workflow
-        try {
-          const formInputs = { task_input: taskInput, task_context: "{}" };
-          if (clientId) formInputs.client_id = clientId;
-          formInputs.stakes_level = stakesLevel;
-          await client.workflows.runs.submitForm(runId, {
+        const formInputs = { task_input: taskInput, task_context: "{}" };
+        if (clientId) formInputs.client_id = clientId;
+        formInputs.stakes_level = stakesLevel;
+        await withTimeout(
+          client.workflows.runs.submitForm(runId, {
             node_id: "input_form",
             inputs: formInputs
-          });
-        } catch (submitErr) {
-          console.warn("submitForm returned or timed out (will attempt to poll session anyway):", submitErr);
-        }
+          }),
+          30000, 'submit_form'
+        );
 
-        // 3. Poll for the session ID created by goal_strip
+        btn.innerHTML = 'Waiting for session... <i data-lucide="loader" class="icon-sm"></i>';
+        lucide.createIcons({root: btn});
+
+        // 3. Poll for the session ID created by goal_strip (up to 60s)
         let newSession = null;
-        for (let i = 0; i < 30; i++) {
-          await new Promise(r => setTimeout(r, 500));
-          const list = await client.records.list("debate_sessions", {
-            sort: [{ field: "created_at", direction: "desc" }],
-            limit: 5
-          });
-          newSession = (list.items || []).find(s => s.task_input === taskInput);
-          if (newSession) break;
+        for (let i = 0; i < 60; i++) {
+          await new Promise(r => setTimeout(r, 1000));
+          try {
+            const list = await client.records.list("debate_sessions", {
+              sort: [{ field: "created_at", direction: "desc" }],
+              limit: 5
+            });
+            newSession = (list.items || [])[0];
+            if (newSession) break;
+          } catch (_) { /* retry */ }
         }
 
         if (!newSession) {
-          throw new Error("Deliberation started, but session record was not found in the database. Please select it from the dropdown.");
+          await loadSessions();
+          showError('Session Created', 'Select the latest session from the dropdown.');
+          hideIntakeModal();
+          btn.disabled = false;
+          btn.innerHTML = 'Start Deliberation <i data-lucide="arrow-right"></i>';
+          lucide.createIcons({root: btn});
+          return;
         }
 
         hideIntakeModal();
@@ -3127,17 +3210,43 @@
         await loadSessions();
 
         // Select the newly spawned session
+        const opt = document.createElement('option');
+        opt.value = newSession.id;
+        opt.textContent = `${(newSession.client_id||'?').toUpperCase()} - ${(newSession.task_input||'').substring(0,45)}...`;
+        sessionSelect.insertBefore(opt, sessionSelect.firstChild);
         sessionSelect.value = newSession.id;
-        setActiveSession(newSession.id);
+        await setActiveSession(newSession.id);
         
         document.getElementById('tab-feed').click();
       } catch (err) {
         console.error('Error starting session in live mode:', err);
+        // If SDK mode failed (timeout or API error), show error with a manual-retry option:
+        // the user can close the modal and try again or use simulation.
+        showError('Deliberation Failed', (err.message || 'Unknown error').substring(0, 120));
         btn.disabled = false;
-        btn.innerHTML = 'Start Deliberation <i data-lucide="arrow-right"></i>';
+        btn.innerHTML = 'Try Again <i data-lucide="refresh-cw" class="icon-sm"></i>';
         lucide.createIcons({root: btn});
-        alert('Failed to initiate live deliberation: ' + (err.message || 'Unknown error'));
       }
+    }
+
+    // ─── Toast Notifications ───
+    function showError(title, message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<div><div class="toast-title">${escapeHtml(title)}</div><div class="toast-body">${escapeHtml(message)}</div></div>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 6000);
+    }
+    function showSuccess(title, message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.style.borderLeftColor = 'var(--consensus)';
+      toast.style.borderColor = 'rgba(16,185,129,0.3)';
+      toast.innerHTML = `<div><div class="toast-title">${escapeHtml(title)}</div><div class="toast-body">${escapeHtml(message)}</div></div>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
     // ─── Helpers ───
